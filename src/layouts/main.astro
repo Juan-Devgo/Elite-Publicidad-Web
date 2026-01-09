@@ -1,0 +1,50 @@
+---
+import Footer from '../components/Footer.astro';
+import Navbar from '../components/Navbar.astro';
+import { getNavbar, getFooter } from '../../lib/content-manager';
+import { getMedia } from '../../lib/utils';
+import type { Media } from '../../types/media';
+
+const dataNavbar = await getNavbar();
+const dataFooter = await getFooter();
+
+const logoNavbar = dataNavbar?.logo;
+const pagesNavbar = dataNavbar?.paginas ?? [];
+const socialNavbar = (dataNavbar?.redes ?? []).map((red: any) => ({
+  ...red,
+  icono: getMedia(red.icono, 'thumbnail') as Media,
+}));
+
+const logoFooter = dataFooter?.logo;
+const paragraphsFooter = dataFooter?.parrafos ?? [];
+const socialFooter = (dataFooter?.redes ?? []).map((red: any) => ({
+  ...red,
+  icono: getMedia(red.icono, 'thumbnail') as Media,
+}));
+const copyrightFooter = dataFooter?.copyright ?? '';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Élite Publicidad</title>
+  </head>
+  <body class="flex flex-col min-h-screen bg-white text-slate-900">
+    <Navbar
+      logo={getMedia(logoNavbar, 'thumbnail') as Media}
+      paginas={pagesNavbar}
+      redes={socialNavbar}
+    />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer
+      logo={getMedia(logoFooter, 'thumbnail') as Media}
+      paragraphs={paragraphsFooter}
+      redes={socialFooter}
+      copyright={copyrightFooter}
+    />
+  </body>
+</html>

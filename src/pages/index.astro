@@ -1,0 +1,27 @@
+---
+import { getHeaderInicio } from '../../lib/content-manager';
+import { getMedia } from '../../lib/utils';
+import { type Media } from '../../types/media';
+import IndexHero from '../components/IndexHero.astro';
+import Main from '../layouts/main.astro';
+
+const data = await getHeaderInicio();
+
+const fondo = data?.fondo;
+const cta = data?.callToAction;
+
+const media = getMedia(fondo) as Media;
+---
+
+<Main>
+  <IndexHero
+    titulo={data.titulo}
+    subtitulo={data.subtitulo}
+    media={media}
+    callToAction={cta}
+  />
+
+  <div class="grid place-items-center h-screen content-center">
+    
+  </div>
+</Main>

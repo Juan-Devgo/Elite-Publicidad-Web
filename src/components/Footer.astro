@@ -1,0 +1,76 @@
+---
+import { Image } from 'astro:assets';
+import SocialNetworks from './SocialNetworks.astro';
+import type { Media } from '../../types/media';
+
+interface Props {
+  logo: Media;
+  paragraphs: {
+    titulo: string;
+    contenido: {
+      type: string;
+      children: {
+        type: string;
+        text: string;
+        bold?: boolean;
+      }[];
+    }[];
+  }[];
+  redes: {
+    icono: Media;
+    nombre: string;
+    href: string;
+  }[];
+  copyright: string;
+}
+
+const { logo, paragraphs, redes, copyright } = Astro.props;
+
+console.log('Props recibidos en Footer:', {
+  logo,
+  paragraphs,
+  redes,
+  copyright,
+});
+---
+
+<footer class="bg-[linear-gradient(to_top,#000_30%,#02EFD6_100%)] text-white">
+  <section class="flex flex-wrap gap-4 mx-10 px-4 py-3">
+    <div class="flex-1 min-w-[250px] p-4 flex items-center justify-center">
+      <a href="/">
+        <Image
+          src={logo.url ?? ''}
+          alt={logo.alt ?? 'Logo de la empresa'}
+          width={logo.width ?? 150}
+          height={logo.height ?? 50}
+        />
+      </a>
+    </div>
+    {
+      paragraphs.map((paragraph) => (
+        <div class="flex-1 min-w-[250px] p-4 text-center">
+          <h1 class="font-semibold text-2xl">{paragraph.titulo}</h1>
+          {paragraph.contenido.map((block) => {
+            if (block.type === 'paragraph') {
+              return (
+                <p class="text-md">
+                  {block.children.map((child) => {
+                    if (child.bold) {
+                      return <strong>{child.text}</strong>;
+                    }
+                    return <span>{child.text}</span>;
+                  })}
+                </p>
+              );
+            }
+            return null;
+          })}
+        </div>
+      ))
+    }
+    <div class="flex-1 min-w-[250px] p-4 flex items-center justify-center">
+      <SocialNetworks className="flex flex-row gap-4" redes={redes} size={64} />
+    </div>
+  </section>
+  <span class="text-center block py-4">{copyright}</span>
+</footer>
