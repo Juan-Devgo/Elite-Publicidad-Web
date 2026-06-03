@@ -1,21 +1,19 @@
 ---
-import { Image } from 'astro:assets';
-import SocialNetworks from './SocialNetworks.astro';
-import type { Media } from '../../types/media';
+import { Image } from "astro:assets";
+import SocialNetworks from "./SocialNetworks.astro";
+import CallToAction from "./ui/CallToAction.astro";
+import type { Media } from "../../types/media";
+import type { Page, Subpage } from "../../types/layout";
 
 interface Props {
   logo: Media;
-  paragraphs: {
-    titulo: string;
-    contenido: {
-      type: string;
-      children: {
-        type: string;
-        text: string;
-        bold?: boolean;
-      }[];
-    }[];
-  }[];
+  callToAction: {
+    label: string;
+    href: string;
+    nuevaPestania: boolean;
+  };
+  servicios: Page[];
+  conocenos: Subpage[];
   redes: {
     icono: Media;
     nombre: string;
@@ -24,53 +22,91 @@ interface Props {
   copyright: string;
 }
 
-const { logo, paragraphs, redes, copyright } = Astro.props;
-
-console.log('Props recibidos en Footer:', {
-  logo,
-  paragraphs,
-  redes,
-  copyright,
-});
+const { logo, callToAction, redes, copyright, servicios, conocenos } = Astro.props;
 ---
 
-<footer class="bg-[linear-gradient(to_top,#000_30%,#02EFD6_100%)] text-white">
-  <section class="flex flex-wrap gap-4 mx-10 px-4 py-3">
-    <div class="flex-1 min-w-[250px] p-4 flex items-center justify-center">
+<footer class="bg-black text-white">
+  <!-- CTA Banner -->
+  <div
+    class="border-t border-b border-secondary/30 py-14 px-6 text-center"
+    style="background: radial-gradient(ellipse at center, #02EFD608 0%, transparent 70%);"
+  >
+    <p class="text-secondary uppercase tracking-widest text-xs font-bold mb-3">
+      ¿Listo para crecer?
+    </p>
+    <h2
+      class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-8"
+      style="text-shadow: 0 0 20px #02EFD650;"
+    >
+      {callToAction.label}
+    </h2>
+    <CallToAction
+      label={callToAction.label}
+      href={callToAction.href}
+      nuevaPestania={callToAction.nuevaPestania}
+    />
+  </div>
+
+  <!-- Main footer grid -->
+  <div class="max-w-6xl mx-auto px-6 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <!-- Logo + redes -->
+    <div class="flex flex-col items-start gap-6 sm:col-span-2 lg:col-span-2 mx-auto">
       <a href="/">
         <Image
-          src={logo.url ?? ''}
-          alt={logo.alt ?? 'Logo de la empresa'}
+          src={logo.url ?? ""}
+          alt={logo.alt ?? "Logo de la empresa"}
           width={logo.width ?? 150}
           height={logo.height ?? 50}
         />
       </a>
+      <SocialNetworks
+        className="flex flex-row gap-4 mx-auto"
+        redes={redes}
+        size={36}
+      />
     </div>
-    {
-      paragraphs.map((paragraph) => (
-        <div class="flex-1 min-w-[250px] p-4 text-center">
-          <h1 class="font-semibold text-2xl">{paragraph.titulo}</h1>
-          {paragraph.contenido.map((block) => {
-            if (block.type === 'paragraph') {
-              return (
-                <p class="text-md">
-                  {block.children.map((child) => {
-                    if (child.bold) {
-                      return <strong>{child.text}</strong>;
-                    }
-                    return <span>{child.text}</span>;
-                  })}
-                </p>
-              );
-            }
-            return null;
-          })}
-        </div>
-      ))
-    }
-    <div class="flex-1 min-w-[250px] p-4 flex items-center justify-center">
-      <SocialNetworks className="flex flex-row gap-4" redes={redes} size={64} />
+
+    <!-- Servicios -->
+    <div>
+      <h3 class="text-secondary uppercase tracking-widest text-md font-bold mb-4 pb-2 border-b border-secondary/30">
+        Servicios
+      </h3>
+      <ul class="space-y-2">
+        {servicios.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class="text-white/60 hover:text-secondary transition-colors duration-200 text-md"
+            >
+              {item.nombre}
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
-  </section>
-  <span class="text-center block py-4">{copyright}</span>
+
+    <!-- Conócenos -->
+    <div>
+      <h3 class="text-secondary uppercase tracking-widest text-md font-bold mb-4 pb-2 border-b border-secondary/30">
+        Conócenos
+      </h3>
+      <ul class="space-y-2">
+        {conocenos.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class="text-white/60 hover:text-secondary transition-colors duration-200 text-md"
+            >
+              {item.nombre}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="border-t border-secondary/20 px-6 py-4 text-center text-white/40 text-xs">
+    {copyright}
+  </div>
 </footer>

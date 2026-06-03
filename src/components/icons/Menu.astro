@@ -1,0 +1,11 @@
+---
+import Menu from './Menu.tsx';
+
+interface Props {
+  className?: string;
+}
+
+const { className } = Astro.props;
+---
+
+<Menu className={className} />

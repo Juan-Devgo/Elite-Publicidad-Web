@@ -1,33 +1,26 @@
-import qs from 'qs';
+import qs from "qs";
 
 export const CMS_BASE_URL =
-  import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
+  import.meta.env.PUBLIC_CMS_URL ?? "http://localhost:1337";
 
 export async function getNavbar() {
   const query = qs.stringify(
     {
       populate: {
         logo: {
-          fields: ['name', 'alternativeText', 'url', 'formats'],
+          fields: ["name", "alternativeText", "url", "formats"],
         },
         paginas: {
           populate: {
             subpaginas: true,
           },
         },
-        redes: {
-          populate: {
-            icono: {
-              fields: ['name', 'alternativeText', 'url', 'formats'],
-            },
-          },
-        },
       },
     },
-    { encodeValuesOnly: true }
+    { encodeValuesOnly: true },
   );
 
-  const content = await getContent('/api/navbar' + '?' + query);
+  const content = await getContent("/api/navbar" + "?" + query);
   return content?.data;
 }
 
@@ -36,9 +29,17 @@ export async function getFooter() {
     {
       populate: {
         logo: {
-          fields: ['name', 'alternativeText', 'url', 'formats'],
+          fields: ["name", "alternativeText", "url", "formats"],
         },
-        parrafos: true,
+        callToAction: true,
+        servicios: {
+          populate: {
+            subpaginas: true,
+          },
+        },
+        conocenos: {
+          populate: true,
+        },
         redes: {
           populate: {
             icono: true,
@@ -46,10 +47,10 @@ export async function getFooter() {
         },
       },
     },
-    { encodeValuesOnly: true }
+    { encodeValuesOnly: true },
   );
 
-  const content = await getContent('/api/footer' + '?' + query);
+  const content = await getContent("/api/footer" + "?" + query);
   return content?.data;
 }
 
@@ -58,38 +59,75 @@ export async function getHeaderInicio() {
     {
       populate: {
         fondo: {
-          fields: ['name', 'alternativeText', 'url', 'formats'],
+          fields: ["name", "alternativeText", "url", "formats"],
         },
         callToAction: true, // o { populate: "*" }
       },
     },
-    { encodeValuesOnly: true }
+    { encodeValuesOnly: true },
   );
 
-  const content = await getContent('/api/header-inicio' + '?' + query);
+  const content = await getContent("/api/header-inicio" + "?" + query);
+  return content?.data;
+}
+
+export async function getWhatsAppButton() {
+  const query = qs.stringify(
+    {
+      populate: {
+        foto_perfil: {
+          fields: ["name", "alternativeText", "url", "formats"],
+        },
+      },
+    },
+    { encodeValuesOnly: true },
+  );
+
+  const content = await getContent("/api/whatsapp-button" + "?" + query);
+  return content?.data;
+}
+
+export async function getContactBar() {
+  const query = qs.stringify(
+    {
+      populate: {
+        telefonos: true,
+        redes: {
+          populate: {
+            icono: {
+              fields: ["name", "alternativeText", "url", "formats"],
+            },
+          },
+        },
+      },
+    },
+    { encodeValuesOnly: true },
+  );
+
+  const content = await getContent("/api/footer-contacto" + "?" + query);
   return content?.data;
 }
 
 export async function getContent(url: string) {
-  console.log('Fetching content from:', CMS_BASE_URL + url);
+  console.log("Fetching content from:", CMS_BASE_URL + url);
 
   try {
     const response = await fetch(CMS_BASE_URL + url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
 
     const data = await response.json();
 
     return data;
   } catch (error) {
-    console.error('Error fetching content:', error);
+    console.error("Error fetching content:", error);
     return null;
   }
 }

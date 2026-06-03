@@ -1,0 +1,26 @@
+---
+import ArrowRight from "../icons/ArrowRight.astro";
+
+interface Props {
+  label: string;
+  href: string;
+  nuevaPestania?: boolean;
+}
+
+const { label, href, nuevaPestania = false } = Astro.props;
+---
+
+<a
+  href={href}
+  target={nuevaPestania ? "_blank" : "_self"}
+  rel={nuevaPestania ? "noopener noreferrer" : undefined}
+  class="group inline-flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-4 rounded-lg font-bold text-xs sm:text-sm uppercase tracking-widest transition-all duration-300
+  bg-primary text-white border-2 border-primary
+  hover:bg-transparent hover:text-secondary hover:border-secondary
+  hover:[box-shadow:0_0_12px_#02EFD6,0_0_30px_#02EFD650]
+  focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 focus:ring-offset-transparent
+  animate-blurred-fade-in animate-duration-700 cta-shine"
+>
+  {label}
+  <ArrowRight class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+</a>

@@ -1,0 +1,11 @@
+---
+import WhatsApp from './WhatsApp.tsx';
+
+interface Props {
+  className?: string;
+}
+
+const { className } = Astro.props;
+---
+
+<WhatsApp className={className} />

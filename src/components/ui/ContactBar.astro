@@ -1,0 +1,86 @@
+---
+import { Image } from "astro:assets";
+import type { Media } from "../../../types/media";
+import Phone from "../icons/Phone.astro";
+import Location from "../icons/Location.astro";
+
+interface Props {
+  telefonos: { telefono: string }[];
+  ubicacion: string;
+  redes: { nombre: string; href: string; icono: Media }[];
+}
+
+const { telefonos, ubicacion, redes } = Astro.props;
+---
+
+<div
+  class="fixed bottom-0 left-0 right-0 z-30 h-10 bg-[linear-gradient(to_right,#000_10%,#02444a)] text-white text-xs sm:text-sm flex items-center animate-slide-up-fade"
+>
+  <!-- Left: phones + location + social networks -->
+  <div class="flex items-center gap-3 sm:gap-5 min-w-0 overflow-hidden mx-auto">
+    <!-- Location -->
+    {
+      ubicacion && (
+        <span class="hidden sm:flex items-center gap-1.5 min-w-0">
+          <Location />
+          <span class="truncate">{ubicacion}</span>
+        </span>
+      )
+    }
+
+    <!-- Separator -->
+    {
+      ubicacion && telefonos.length > 0 && (
+        <span class="text-white/30 hidden sm:inline">|</span>
+      )
+    }
+
+    <!-- Phones -->
+    {
+      telefonos.slice(0, 2).map((tel, i) => (
+        <a
+          href={`tel:${tel.telefono.replace(/\s/g, "")}`}
+          class="flex items-center gap-1.5 hover:text-secondary transition-colors whitespace-nowrap shrink-0"
+        >
+          <Phone />
+
+          <span>{tel.telefono}</span>
+          {i === 0 && telefonos.length > 1 && (
+            <span class="text-white/30 ml-1 hidden xs:inline">·</span>
+          )}
+        </a>
+      ))
+    }
+
+    <!-- Separator -->
+    {
+      ubicacion && telefonos.length > 0 && (
+        <span class="text-white/30 hidden sm:inline">|</span>
+      )
+    }
+
+    {
+      redes.length > 0 && (
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0 mx-auto">
+          {redes.slice(0, 3).map((red) => (
+            <a
+              href={red.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={red.nombre}
+              class="transition-all hover:scale-110 hover:brightness-125 active:scale-95"
+            >
+              <Image
+                src={red.icono.url ?? ""}
+                alt={red.icono.alt ?? red.nombre}
+                width={22}
+                height={22}
+                class="w-5 h-5 sm:w-5.5 sm:h-5.5 object-contain"
+              />
+            </a>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</div>

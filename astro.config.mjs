@@ -1,7 +1,20 @@
 import { defineConfig } from 'astro/config'
-import tailwind from '@astrojs/tailwind'
+import tailwindcss from '@tailwindcss/vite'
+
+import react from '@astrojs/react';
+
+import sitemap from "@astrojs/sitemap";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [tailwind()],
+  vite: {
+    plugins: [tailwindcss()],
+  },
+  integrations: [react(), sitemap()],
+  image: {
+    remotePatterns: [
+      { protocol: "https" },
+      { protocol: "http", hostname: "localhost" },
+    ],
+  },
 })

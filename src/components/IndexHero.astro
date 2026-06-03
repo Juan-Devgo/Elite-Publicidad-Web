@@ -1,11 +1,15 @@
 ---
-import { Image } from 'astro:assets';
-import { type Media } from '../../types/media';
-import Button from './ui/Button.astro';
+import { Image } from "astro:assets";
+import { type Media } from "../../types/media";
+import {
+  BlocksRenderer,
+  type BlocksContent,
+} from "@strapi/blocks-react-renderer";
+import CallToAction from "./ui/CallToAction.astro";
 
 interface Props {
   titulo: string;
-  subtitulo: string;
+  mensaje: BlocksContent;
   media: Media;
   callToAction: {
     label: string;
@@ -14,21 +18,21 @@ interface Props {
   };
 }
 
-const { titulo, subtitulo, media, callToAction } = Astro.props;
+const { titulo, mensaje, media, callToAction } = Astro.props;
 
-console.log('Tipo de media recibido en IndexHero:', media.type);
+console.log("Tipo de media recibido en IndexHero:", media.type);
 ---
 
 <header
-  class="relative min-h-[60vh] flex items-center justify-start text-left text-white overflow-hidden"
+  class="relative h-screen flex items-center justify-start text-left text-white overflow-hidden"
 >
   <!-- Renderizado condicional del media, escoge entre imagen o video -->
 
   {
-    media.url && media.type === 'image' && (
+    media.url && media.type === "image" && (
       <Image
         src={media.url}
-        alt={media.alt ?? 'Imagen de fondo'}
+        alt={media.alt ?? "Imagen de fondo"}
         width={media.width ?? 1920}
         height={media.height ?? 1080}
         class="absolute inset-0 w-full h-full object-cover"
@@ -38,7 +42,7 @@ console.log('Tipo de media recibido en IndexHero:', media.type);
   }
 
   {
-    media.url && media.type === 'video' && (
+    media.url && media.type === "video" && (
       <video
         class="absolute inset-0 w-full h-full object-cover"
         autoplay
@@ -47,7 +51,7 @@ console.log('Tipo de media recibido en IndexHero:', media.type);
         playsinline
       >
         <source src={media.url} type="video/mp4" />
-        {media.alt ?? 'Tu navegador no soporta la etiqueta de video.'}
+        {media.alt ?? "Tu navegador no soporta la etiqueta de video."}
       </video>
     )
   }
@@ -55,7 +59,7 @@ console.log('Tipo de media recibido en IndexHero:', media.type);
   <!-- Si no hay media o es desconocido, mostramos un fondo oscuro -->
 
   {
-    !media.url || media.type === 'unknown' ? (
+    !media.url || media.type === "unknown" ? (
       <div class="absolute inset-0 bg-slate-900" />
     ) : (
       <div class="absolute inset-0 bg-black/50" />
@@ -66,20 +70,35 @@ console.log('Tipo de media recibido en IndexHero:', media.type);
 
   <!-- Contenido del hero -->
 
-  <div class="relative z-10 max-w-3xl mx-10 px-4">
-    {titulo && <h1 class="text-3xl md:text-5xl font-bold mb-4">{titulo}</h1>}
-    {subtitulo && <p class="text-lg md:text-2xl mb-6">{subtitulo}</p>}
+  <div
+    class="relative z-10 max-w-3xl w-full mx-auto px-6 sm:px-10 lg:px-16 py-16 font-hero"
+  >
+    {
+      titulo && (
+        <h1
+          class="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-4 text-white
+        [text-shadow:0_0_2px_#fff,0_0_8px_#fff,0_0_16px_#02EFD6,0_0_32px_#02EFD6,0_0_64px_#02EFD6]
+        animate-blurred-fade-in animate-duration-400"
+        >
+          {titulo}
+        </h1>
+      )
+    }
+    {
+      mensaje && (
+        <div class="text-sm sm:text-base md:text-lg lg:text-xl text-white/80 mb-10 max-w-xl leading-relaxed animate-pulse-fade-in animation-delay-500">
+          <BlocksRenderer client:load content={mensaje} />
+        </div>
+      )
+    }
 
     {
       callToAction && (
-        <a
+        <CallToAction
+          label={callToAction.label}
           href={callToAction.href}
-          target={callToAction.nuevaPestania ? '_blank' : '_self'}
-          rel={callToAction.nuevaPestania ? 'noopener noreferrer' : undefined}
-          class="inline-block py-3 rounded-md bg-accent hover:bg-accent/90 transition"
-        >
-          <Button>{callToAction.label}</Button>
-        </a>
+          nuevaPestania={callToAction.nuevaPestania}
+        />
       )
     }
   </div>

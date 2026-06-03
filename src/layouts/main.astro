@@ -1,27 +1,52 @@
 ---
-import Footer from '../components/Footer.astro';
-import Navbar from '../components/Navbar.astro';
-import { getNavbar, getFooter } from '../../lib/content-manager';
-import { getMedia } from '../../lib/utils';
-import type { Media } from '../../types/media';
+import "../styles/global.css";
+import Footer from "../components/Footer.astro";
+import Navbar from "../components/Navbar.astro";
+import ContactBar from "../components/ui/ContactBar.astro";
+import WhatsAppButton from "../components/ui/WhatsAppButton.tsx";
+import { getImage } from "astro:assets";
+import {
+  getNavbar,
+  getFooter,
+  getContactBar,
+  getWhatsAppButton,
+} from "../../lib/content-manager";
+import { getMedia } from "../../lib/utils";
+import type { Media } from "../../types/media";
 
 const dataNavbar = await getNavbar();
 const dataFooter = await getFooter();
+const dataContactBar = await getContactBar();
+const whatsappButton = await getWhatsAppButton();
 
 const logoNavbar = dataNavbar?.logo;
 const pagesNavbar = dataNavbar?.paginas ?? [];
-const socialNavbar = (dataNavbar?.redes ?? []).map((red: any) => ({
-  ...red,
-  icono: getMedia(red.icono, 'thumbnail') as Media,
-}));
-
 const logoFooter = dataFooter?.logo;
-const paragraphsFooter = dataFooter?.parrafos ?? [];
+const callToAction = dataFooter?.callToAction ?? {};
+const servicesFooter = dataFooter?.servicios ?? [];
+const aboutFooter = dataFooter?.conocenos ?? [];
 const socialFooter = (dataFooter?.redes ?? []).map((red: any) => ({
   ...red,
-  icono: getMedia(red.icono, 'thumbnail') as Media,
+  icono: getMedia(red.icono, "thumbnail") as Media,
 }));
-const copyrightFooter = dataFooter?.copyright ?? '';
+const copyrightFooter = dataFooter?.copyright ?? "";
+
+const telefonosContactBar = dataContactBar?.telefonos ?? [];
+const ubicacionContactBar = dataContactBar?.ubicacion ?? "";
+const redesContactBar = (dataContactBar?.redes ?? []).map((red: any) => ({
+  ...red,
+  icono: getMedia(red.icono, "thumbnail") as Media,
+}));
+
+const fotoPerfil = getMedia(whatsappButton?.foto_perfil, "thumbnail");
+const fotoPerfilOptimizada = fotoPerfil?.url
+  ? await getImage({
+      src: fotoPerfil.url,
+      width: fotoPerfil.width ?? undefined,
+      height: fotoPerfil.height ?? undefined,
+      format: "webp",
+    }).then((img) => ({ src: img.src, alt: fotoPerfil.alt ?? "" }))
+  : undefined;
 ---
 
 <html lang="en">
@@ -29,22 +54,44 @@ const copyrightFooter = dataFooter?.copyright ?? '';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <title>Élite Publicidad</title>
   </head>
-  <body class="flex flex-col min-h-screen bg-white text-slate-900">
+  <body
+    class="flex flex-col min-h-screen bg-white text-slate-900 pb-10 contenedor-scroll"
+  >
     <Navbar
-      logo={getMedia(logoNavbar, 'thumbnail') as Media}
+      logo={getMedia(logoNavbar, "thumbnail") as Media}
       paginas={pagesNavbar}
-      redes={socialNavbar}
     />
     <main class="flex-1">
       <slot />
     </main>
     <Footer
-      logo={getMedia(logoFooter, 'thumbnail') as Media}
-      paragraphs={paragraphsFooter}
+      logo={getMedia(logoFooter, "thumbnail") as Media}
+      callToAction={callToAction}
+      servicios={servicesFooter}
+      conocenos={aboutFooter}
       redes={socialFooter}
       copyright={copyrightFooter}
+    />
+    <!-- Contact bar fixed at bottom -->
+    <ContactBar
+      telefonos={telefonosContactBar}
+      ubicacion={ubicacionContactBar}
+      redes={redesContactBar}
+    />
+    <!-- WhatsApp floating button — update telefono and mensaje as needed -->
+    <WhatsAppButton
+      client:load
+      telefono={whatsappButton?.telefono}
+      fotoPerfil={fotoPerfilOptimizada}
+      mensaje={whatsappButton?.mensaje}
     />
   </body>
 </html>
