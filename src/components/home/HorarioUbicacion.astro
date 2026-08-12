@@ -1,0 +1,409 @@
+---
+import "mapbox-gl/dist/mapbox-gl.css";
+import SectionHeading from "../ui/SectionHeading.astro";
+import CallToAction from "../ui/CallToAction.astro";
+import Clock from "../icons/Clock.astro";
+import Location from "../icons/Location.astro";
+import type {
+  CallToAction as CTA,
+  HorarioDia,
+  Ubicacion,
+} from "../../../types/contenido";
+
+interface Props {
+  etiqueta?: string;
+  titulo?: string;
+  subtitulo?: string;
+  horarios: HorarioDia[];
+  notaHorario?: string;
+  ubicacion?: Ubicacion | null;
+  callToAction?: CTA | null;
+}
+
+const {
+  etiqueta,
+  titulo,
+  subtitulo,
+  horarios = [],
+  notaHorario,
+  ubicacion,
+  callToAction,
+} = Astro.props;
+
+const hayContenido = horarios.length > 0 || !!ubicacion;
+
+/** Centro por defecto: Armenia, Quindío. */
+const CENTRO_POR_DEFECTO: [number, number] = [-75.6812, 4.5339];
+
+/**
+ * Extrae [lng, lat] de una URL de Google Maps. Cubre los formatos habituales:
+ * `!2d<lng>!3d<lat>` (embed de lugar), `!1d<lat>!2d<lng>` (embed de Street View),
+ * `@lat,lng`, `q=lat,lng` y `ll=lat,lng`.
+ */
+function coordenadasDesdeUrl(url?: string): [number, number] | null {
+  if (!url) return null;
+
+  const pb = url.match(/!2d(-?\d+\.\d+)!3d(-?\d+\.\d+)/);
+  if (pb) return [Number(pb[1]), Number(pb[2])];
+
+  const panorama = url.match(/!1d(-?\d+\.\d+)!2d(-?\d+\.\d+)/);
+  if (panorama) return [Number(panorama[2]), Number(panorama[1])];
+
+  const arroba = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (arroba) return [Number(arroba[2]), Number(arroba[1])];
+
+  const parametro = url.match(/[?&](?:q|ll|center)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (parametro) return [Number(parametro[2]), Number(parametro[1])];
+
+  return null;
+}
+
+// Mapbox GL corre en el navegador: el token viaja al cliente sí o sí, así que
+// se lee con prefijo `PUBLIC_` (lo único que Astro expone a `import.meta.env`).
+// Restringir el token por dominio en la cuenta de Mapbox.
+const mapboxToken = import.meta.env.PUBLIC_MAPBOX_TOKEN;
+
+const centro: [number, number] =
+  typeof ubicacion?.longitud === "number" &&
+  typeof ubicacion?.latitud === "number"
+    ? [ubicacion.longitud, ubicacion.latitud]
+    : (coordenadasDesdeUrl(ubicacion?.mapaEmbed) ??
+      coordenadasDesdeUrl(ubicacion?.mapaHref) ??
+      CENTRO_POR_DEFECTO);
+
+// Sin token no hay mapa 3D: el bloque cae al iframe de Google Maps de siempre.
+const hayMapbox = !!mapboxToken;
+const hayGoogle = !!ubicacion?.mapaEmbed;
+const hayPestanias = hayMapbox && hayGoogle;
+---
+
+{
+  hayContenido && (
+    <section id="horario" class="relative bg-gray-950 py-20 sm:py-28">
+      <div class="mx-auto max-w-368 px-6">
+        <SectionHeading
+          etiqueta={etiqueta}
+          titulo={titulo}
+          subtitulo={subtitulo}
+          tono="oscuro"
+        />
+
+        <div class="mt-14 grid gap-8 lg:grid-cols-12">
+          {/* Horario de atención */}
+          {horarios.length > 0 && (
+            <div class="relative overflow-hidden rounded-3xl border border-slate-200 bg-black p-8 text-white shadow-xl shadow-slate-900/10 sm:p-10 lg:col-span-4">
+              <div
+                class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-50 blur-2xl"
+                style="background: radial-gradient(circle, #02EFD644 0%, transparent 70%);"
+              />
+
+              {/* Trama diagonal al pie de la tarjeta. Decorativa: oculta en móvil. */}
+              <div
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-x-0 bottom-0 hidden h-28 sm:block"
+                style="background-image: repeating-linear-gradient(135deg, #02efd6 0 1.5px, transparent 1.5px 9px); opacity: 0.3; -webkit-mask-image: linear-gradient(to top, black, transparent); mask-image: linear-gradient(to top, black, transparent);"
+              />
+
+              <div class="relative">
+                <div class="flex items-center gap-3">
+                  <Clock class="h-8 w-8 shrink-0 text-secondary" />
+                  <h3 class="font-hero text-xl font-bold sm:text-3xl">
+                    Horario de Atención
+                  </h3>
+                </div>
+
+                <ul class="mt-8 divide-y divide-white/10">
+                  {horarios.map((h) => (
+                    <li
+                      class:list={[
+                        "flex items-baseline justify-between gap-4 py-3.5 my-3 text-sm sm:text-base",
+                        h.destacado && "-mx-3 rounded-lg bg-secondary/10 px-3",
+                      ]}
+                    >
+                      <span
+                        class:list={[
+                          "font-semibold",
+                          h.destacado ? "text-secondary" : "text-white/90",
+                        ]}
+                      >
+                        {h.dias}
+                      </span>
+                      <span
+                        class:list={[
+                          "text-right tabular-nums",
+                          h.cerrado ? "text-white/35 italic" : "text-white/70",
+                        ]}
+                      >
+                        {h.hora}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                {notaHorario && (
+                  <p class="mt-6 border-l-2 border-secondary/60 pl-3 text-xs leading-relaxed text-white/50 sm:text-sm">
+                    {notaHorario}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Ubicación */}
+          {ubicacion && (
+            <div class="overflow-hidden rounded-3xl border border-slate-200 bg-black shadow-xl shadow-slate-900/5 lg:col-span-8">
+              {(hayMapbox || hayGoogle) && (
+                <div
+                  data-ubicacion-mapa
+                  data-token={mapboxToken}
+                  data-lng={String(centro[0])}
+                  data-lat={String(centro[1])}
+                >
+                  {/* Barra de pestañas: fuera del mapa, no encima de él. */}
+                  {hayPestanias && (
+                    <div
+                      class="flex gap-2 border-b border-white/10 bg-black px-4 py-3 sm:px-6"
+                      role="tablist"
+                      aria-label="Vistas de la ubicación"
+                    >
+                      <button
+                        type="button"
+                        role="tab"
+                        id="tab-ver-mapa"
+                        aria-controls="panel-ver-mapa"
+                        aria-selected="true"
+                        data-tab="mapa"
+                        class="rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase tracking-widest cursor-pointer text-white/60 transition-colors hover:text-white aria-selected:border-primary aria-selected:bg-primary aria-selected:text-white sm:text-sm"
+                      >
+                        Ver Mapa
+                      </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        id="tab-ver-local"
+                        aria-controls="panel-ver-local"
+                        aria-selected="false"
+                        tabindex="-1"
+                        data-tab="local"
+                        class="rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase tracking-widest cursor-pointer text-white/60 transition-colors hover:text-white aria-selected:border-primary aria-selected:bg-primary aria-selected:text-white sm:text-sm"
+                      >
+                        Ver Local
+                      </button>
+                    </div>
+                  )}
+
+                  <div class="relative">
+                    {hayMapbox && (
+                      <div
+                        id="panel-ver-mapa"
+                        role="tabpanel"
+                        aria-labelledby="tab-ver-mapa"
+                        data-panel="mapa"
+                        class="h-72 w-full sm:h-96"
+                      >
+                        <div data-mapbox class="h-full w-full bg-gray-900" />
+                        <p
+                          data-mapbox-error
+                          hidden
+                          class="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-white/60"
+                        >
+                          No se pudo cargar el mapa 3D.
+                        </p>
+                      </div>
+                    )}
+
+                    {hayGoogle && (
+                      <div
+                        id="panel-ver-local"
+                        role="tabpanel"
+                        aria-labelledby="tab-ver-local"
+                        data-panel="local"
+                        hidden={hayMapbox}
+                        class="h-72 w-full sm:h-96"
+                      >
+                        <iframe
+                          src={ubicacion.mapaEmbed}
+                          title={`Ubicación de Élite Publicidad en ${ubicacion.ciudad ?? "Armenia, Quindío"}`}
+                          class="h-full w-full border-0 grayscale-35 transition-all duration-500 hover:grayscale-0"
+                          loading="lazy"
+                          referrerpolicy="no-referrer-when-downgrade"
+                          allowfullscreen
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div class="relative overflow-hidden p-8 sm:p-10">
+                {/* Retícula de puntos en el espacio libre de la derecha. Decorativa: oculta en móvil. */}
+                <div
+                  aria-hidden="true"
+                  class="pointer-events-none absolute inset-y-0 right-0 hidden w-64 sm:block"
+                  style="background-image: radial-gradient(#2f86e8 1.4px, transparent 1.4px); background-size: 13px 13px; opacity: 0.55; -webkit-mask-image: linear-gradient(to left, black, transparent 80%); mask-image: linear-gradient(to left, black, transparent 80%);"
+                />
+                <div
+                  aria-hidden="true"
+                  class="pointer-events-none absolute -bottom-20 -right-10 hidden h-56 w-56 rounded-full opacity-60 blur-2xl sm:block"
+                  style="background: radial-gradient(circle, #1463be88 0%, transparent 70%);"
+                />
+
+                <div class="relative flex items-start gap-3">
+                  <Location class="mt-1 h-8 w-8 shrink-0 text-primary" />
+                  <div>
+                    <h3 class="font-hero text-xl font-bold text-white sm:text-3xl">
+                      Dónde estamos
+                    </h3>
+                    <p class="mt-2 text-sm leading-relaxed text-slate-200 font-bold sm:text-lg">
+                      {ubicacion.direccion}
+                      {ubicacion.ciudad && (
+                        <>
+                          <br />
+                          <span class="text-slate-100">{ubicacion.ciudad}</span>
+                        </>
+                      )}
+                    </p>
+                    {ubicacion.referencia && (
+                      <p class="mt-2 text-xs text-slate-400 sm:text-sm">
+                        {ubicacion.referencia}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div class="relative mt-8 flex flex-wrap items-center gap-4">
+                  {callToAction?.label && (
+                    <CallToAction
+                      label={callToAction.label}
+                      href={callToAction.href}
+                      nuevaPestania={callToAction.nuevaPestania}
+                    />
+                  )}
+                  {ubicacion.mapaHref && (
+                    <a
+                      href={ubicacion.mapaHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-xs font-bold uppercase tracking-widest text-primary underline-offset-4 transition-colors hover:text-secondary hover:underline sm:text-sm"
+                    >
+                      Cómo llegar
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<script>
+  import mapboxgl from "mapbox-gl";
+
+  const contenedor = document.querySelector<HTMLElement>(
+    "[data-ubicacion-mapa]",
+  );
+
+  if (contenedor) {
+    const token = contenedor.dataset.token;
+    const lng = Number(contenedor.dataset.lng);
+    const lat = Number(contenedor.dataset.lat);
+    const nodoMapa = contenedor.querySelector<HTMLElement>("[data-mapbox]");
+    const nodoError = contenedor.querySelector<HTMLElement>(
+      "[data-mapbox-error]",
+    );
+    const tabs = [
+      ...contenedor.querySelectorAll<HTMLButtonElement>("[data-tab]"),
+    ];
+    const paneles = [
+      ...contenedor.querySelectorAll<HTMLElement>("[data-panel]"),
+    ];
+
+    let mapa: mapboxgl.Map | null = null;
+
+    /** Inicializa Mapbox una sola vez, cuando el panel llega a viewport. */
+    function iniciarMapa() {
+      if (mapa || !nodoMapa || !token) return;
+
+      try {
+        mapa = new mapboxgl.Map({
+          accessToken: token,
+          container: nodoMapa,
+          style: "mapbox://styles/mapbox/standard",
+          center: [lng, lat],
+          zoom: 16,
+          pitch: 62,
+          bearing: -20,
+          antialias: true,
+          cooperativeGestures: true,
+        });
+
+        mapa.addControl(
+          new mapboxgl.NavigationControl({ visualizePitch: true }),
+          "bottom-right",
+        );
+
+        new mapboxgl.Marker({ color: "#02efd6" })
+          .setLngLat([lng, lat])
+          .addTo(mapa);
+
+        mapa.on("style.load", () => {
+          // El estilo Standard ya trae edificios 3D; ajustamos luz y relieve.
+          mapa?.setConfigProperty("basemap", "lightPreset", "day");
+          mapa?.setConfigProperty("basemap", "showPointOfInterestLabels", true);
+        });
+
+        mapa.on("error", mostrarError);
+      } catch {
+        mostrarError();
+      }
+    }
+
+    function mostrarError() {
+      if (nodoError) nodoError.hidden = false;
+      if (nodoMapa) nodoMapa.style.visibility = "hidden";
+    }
+
+    function activar(nombre: string) {
+      tabs.forEach((tab) => {
+        const activo = tab.dataset.tab === nombre;
+        tab.setAttribute("aria-selected", String(activo));
+        tab.tabIndex = activo ? 0 : -1;
+      });
+      paneles.forEach((panel) => {
+        panel.hidden = panel.dataset.panel !== nombre;
+      });
+      if (nombre === "mapa") {
+        iniciarMapa();
+        // El contenedor estaba oculto: Mapbox necesita remedir su tamaño.
+        requestAnimationFrame(() => mapa?.resize());
+      }
+    }
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => activar(tab.dataset.tab!));
+      tab.addEventListener("keydown", (e) => {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        e.preventDefault();
+        const paso = e.key === "ArrowRight" ? 1 : -1;
+        const siguiente = tabs[(i + paso + tabs.length) % tabs.length];
+        siguiente.focus();
+        activar(siguiente.dataset.tab!);
+      });
+    });
+
+    if (nodoMapa) {
+      const observador = new IntersectionObserver(
+        (entradas) => {
+          if (!entradas.some((e) => e.isIntersecting)) return;
+          observador.disconnect();
+          iniciarMapa();
+        },
+        { rootMargin: "200px" },
+      );
+      observador.observe(nodoMapa);
+    }
+  }
+</script>

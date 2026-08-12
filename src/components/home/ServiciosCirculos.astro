@@ -1,0 +1,132 @@
+---
+import { Image } from "astro:assets";
+import SectionHeading from "../ui/SectionHeading.astro";
+import ArrowRight from "../icons/ArrowRight.astro";
+import type { ServicioCirculo } from "../../../types/contenido";
+
+interface Props {
+  etiqueta?: string;
+  titulo?: string;
+  subtitulo?: string;
+  servicios: ServicioCirculo[];
+}
+
+const { etiqueta, titulo, subtitulo, servicios = [] } = Astro.props;
+---
+
+{
+  servicios.length > 0 && (
+    <section
+      id="servicios"
+      class="relative overflow-hidden bg-black py-20 sm:py-28"
+    >
+      {/* Halo de color detrás de los círculos */}
+      <div
+        class="pointer-events-none absolute inset-0 opacity-70"
+        style="background: radial-gradient(60% 50% at 50% 35%, #1463be22 0%, transparent 70%);"
+      />
+      {/* Retícula sutil */}
+      <div
+        class="pointer-events-none absolute inset-0 opacity-[0.06]"
+        style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 64px 64px; mask-image: radial-gradient(ellipse at center, #000 20%, transparent 75%);"
+      />
+
+      <div class="relative z-10 mx-auto max-w-6xl px-6">
+        <SectionHeading
+          etiqueta={etiqueta}
+          titulo={titulo}
+          subtitulo={subtitulo}
+          tono="oscuro"
+        />
+
+        <div class="mt-16 grid grid-cols-2 gap-x-6 gap-y-14 sm:gap-x-10 lg:grid-cols-4">
+          {servicios.map((servicio, i) => (
+            <a
+              href={servicio.href}
+              class="group flex flex-col items-center text-center focus:outline-none lg:even:mt-12"
+              style={`transition-delay:${i * 120}ms`}
+              data-circulo
+            >
+              <div class="relative aspect-square w-full max-w-55">
+                {/* Anillo giratorio que se enciende al pasar el mouse */}
+                <div
+                  class="absolute -inset-1 rounded-full opacity-0 blur-[2px] transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100 motion-safe:group-hover:animate-spin"
+                  style="background: conic-gradient(from 0deg, #02EFD6, transparent 35%, #1463be 55%, transparent 85%, #02EFD6); animation-duration: 6s;"
+                />
+
+                <div class="relative h-full w-full overflow-hidden rounded-full ring-1 ring-white/15 transition-all duration-500 group-hover:ring-secondary/80 group-hover:[box-shadow:0_0_30px_#02EFD644]">
+                  {servicio.imagen?.url ? (
+                    <Image
+                      src={servicio.imagen.url}
+                      alt={servicio.imagen.alt ?? servicio.nombre}
+                      width={servicio.imagen.width ?? 480}
+                      height={servicio.imagen.height ?? 480}
+                      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div class="h-full w-full bg-slate-800" />
+                  )}
+
+                  <div class="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-transparent transition-opacity duration-500 group-hover:from-black/70" />
+
+                  <span class="absolute inset-x-0 bottom-6 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-secondary opacity-0 transition-all duration-500 group-hover:bottom-8 group-hover:opacity-100">
+                    Ver más
+                    <ArrowRight class="h-3 w-3" />
+                  </span>
+                </div>
+              </div>
+
+              <h3 class="font-hero mt-6 text-base font-bold text-white transition-colors duration-300 group-hover:text-secondary sm:text-lg">
+                {servicio.nombre}
+              </h3>
+              {servicio.descripcion && (
+                <p class="mt-2 max-w-[26ch] text-xs leading-relaxed text-white/50 sm:text-sm">
+                  {servicio.descripcion}
+                </p>
+              )}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<script>
+  // Entrada escalonada de los círculos al aparecer en pantalla.
+  const circulos = document.querySelectorAll<HTMLElement>("[data-circulo]");
+
+  if (circulos.length) {
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (reduceMotion) {
+      circulos.forEach((el) => el.classList.remove("opacity-0"));
+    } else {
+      circulos.forEach((el) =>
+        el.classList.add(
+          "opacity-0",
+          "translate-y-6",
+          "transition-all",
+          "duration-700",
+        ),
+      );
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target as HTMLElement;
+            el.classList.remove("opacity-0", "translate-y-6");
+            observer.unobserve(el);
+          });
+        },
+        { threshold: 0.2 },
+      );
+
+      circulos.forEach((el) => observer.observe(el));
+    }
+  }
+</script>
