@@ -1,0 +1,123 @@
+---
+import { Image } from "astro:assets";
+import CallToAction from "../ui/CallToAction.astro";
+import type { Media } from "../../../types/media";
+import type { CallToAction as CTA } from "../../../types/contenido";
+
+interface Props {
+  etiqueta?: string;
+  titulo: string;
+  subtitulo?: string;
+  media?: Media | null;
+  callToAction?: CTA | null;
+  /** Migas de pan: la última es la página actual. */
+  migas?: { nombre: string; href?: string }[];
+}
+
+const { etiqueta, titulo, subtitulo, media, callToAction, migas = [] } =
+  Astro.props;
+---
+
+<header
+  class="relative flex min-h-[70vh] items-end overflow-hidden bg-black text-white"
+>
+  {
+    media?.url && media.type === "image" && (
+      <Image
+        src={media.url}
+        alt={media.alt ?? titulo}
+        width={media.width ?? 1920}
+        height={media.height ?? 1080}
+        class="absolute inset-0 h-full w-full object-cover"
+        loading="eager"
+      />
+    )
+  }
+
+  {
+    media?.url && media.type === "video" && (
+      <video
+        class="absolute inset-0 h-full w-full object-cover"
+        autoplay
+        muted
+        loop
+        playsinline
+      >
+        <source src={media.url} type="video/mp4" />
+      </video>
+    )
+  }
+
+  <div
+    class="absolute inset-0 bg-gradient-to-t from-black via-black/75 to-black/40"
+  >
+  </div>
+  <div
+    class="pointer-events-none absolute inset-0"
+    style="background: radial-gradient(60% 60% at 15% 90%, #02EFD622 0%, transparent 65%);"
+  >
+  </div>
+
+  <div
+    class="font-hero relative z-10 mx-auto w-full max-w-6xl px-6 pb-16 pt-32 sm:pb-20 sm:pt-40"
+  >
+    {
+      migas.length > 0 && (
+        <nav
+          aria-label="Ruta de navegación"
+          class="mb-6 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-widest text-white/40 sm:text-xs"
+        >
+          {migas.map((miga, i) => (
+            <>
+              {i > 0 && <span class="text-white/20">/</span>}
+              {miga.href ? (
+                <a
+                  href={miga.href}
+                  class="transition-colors hover:text-secondary"
+                >
+                  {miga.nombre}
+                </a>
+              ) : (
+                <span class="text-secondary">{miga.nombre}</span>
+              )}
+            </>
+          ))}
+        </nav>
+      )
+    }
+
+    {
+      etiqueta && (
+        <p class="mb-4 text-[10px] font-bold uppercase tracking-[0.25em] text-secondary sm:text-xs">
+          {etiqueta}
+        </p>
+      )
+    }
+
+    <h1
+      class="animate-blurred-fade-in animate-duration-500 max-w-4xl text-4xl font-bold leading-tight sm:text-5xl md:text-6xl lg:text-7xl [text-shadow:0_0_2px_#fff,0_0_18px_#02EFD680,0_0_44px_#02EFD650]"
+    >
+      {titulo}
+    </h1>
+
+    {
+      subtitulo && (
+        <p class="animate-pulse-fade-in animation-delay-300 mt-6 max-w-2xl text-sm leading-relaxed text-white/70 sm:text-base md:text-lg">
+          {subtitulo}
+        </p>
+      )
+    }
+
+    {
+      callToAction?.label && (
+        <div class="mt-10">
+          <CallToAction
+            label={callToAction.label}
+            href={callToAction.href}
+            nuevaPestania={callToAction.nuevaPestania}
+          />
+        </div>
+      )
+    }
+  </div>
+</header>

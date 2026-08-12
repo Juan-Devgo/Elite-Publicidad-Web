@@ -1,27 +1,73 @@
 ---
-import { getHeaderInicio } from '../../lib/content-manager';
-import { getMedia } from '../../lib/utils';
-import { type Media } from '../../types/media';
-import IndexHero from '../components/IndexHero.astro';
-import Main from '../layouts/main.astro';
+import {
+  getGaleriaInicio,
+  getHeaderInicio,
+  getHorarioUbicacion,
+  getServiciosInicio,
+} from "../../lib/content-manager";
+import { getMedia } from "../../lib/utils";
+import { type Media } from "../../types/media";
+import type { ServicioCirculo, Trabajo } from "../../types/contenido";
+import IndexHero from "../components/IndexHero.astro";
+import ServiciosCirculos from "../components/home/ServiciosCirculos.astro";
+import HorarioUbicacion from "../components/home/HorarioUbicacion.astro";
+import Galeria from "../components/Galeria.astro";
+import Main from "../layouts/main.astro";
 
 const data = await getHeaderInicio();
+const dataServicios = await getServiciosInicio();
+const dataHorario = await getHorarioUbicacion();
+const dataGaleria = await getGaleriaInicio();
 
-const fondo = data?.fondo;
-const cta = data?.callToAction;
+const media = getMedia(data?.fondo) as Media;
 
-const media = getMedia(fondo) as Media;
+const servicios: ServicioCirculo[] = (dataServicios?.servicios ?? []).map(
+  (servicio: any) => ({
+    ...servicio,
+    imagen: getMedia(servicio.imagen, "small"),
+  }),
+);
+
+const trabajos: Trabajo[] = (dataGaleria?.trabajos ?? []).map(
+  (trabajo: any) => ({
+    ...trabajo,
+    imagen: getMedia(trabajo.image, "large"),
+  }),
+);
 ---
 
 <Main>
   <IndexHero
-    titulo={data.titulo}
-    mensaje={data.mensaje}
+    titulo={data?.titulo}
+    mensaje={data?.mensaje}
     media={media}
-    callToAction={cta}
+    callToAction={data?.callToAction}
   />
 
-  <div class="grid place-items-center h-screen content-center">
-    
-  </div>
+  <ServiciosCirculos
+    etiqueta={dataServicios?.etiqueta}
+    titulo={dataServicios?.titulo}
+    subtitulo={dataServicios?.subtitulo}
+    servicios={servicios}
+  />
+
+  <HorarioUbicacion
+    etiqueta={dataHorario?.etiqueta}
+    titulo={dataHorario?.titulo}
+    subtitulo={dataHorario?.subtitulo}
+    horarios={dataHorario?.horarios ?? []}
+    notaHorario={dataHorario?.notaHorario}
+    ubicacion={dataHorario?.ubicaciones?.[0] ?? null}
+    callToAction={dataHorario?.callToAction}
+  />
+
+  <Galeria
+    id="trabajos"
+    etiqueta={dataGaleria?.etiqueta}
+    titulo={dataGaleria?.titulo}
+    subtitulo={dataGaleria?.subtitulo}
+    trabajos={trabajos}
+    callToAction={dataGaleria?.callToAction}
+    tono="oscuro"
+  />
 </Main>

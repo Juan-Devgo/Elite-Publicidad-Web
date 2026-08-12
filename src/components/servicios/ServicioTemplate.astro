@@ -1,0 +1,162 @@
+---
+import ServicioHero from "./ServicioHero.astro";
+import CierreContacto from "./CierreContacto.astro";
+import CategoriasGrid from "./CategoriasGrid.astro";
+import Galeria from "../Galeria.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+import RichText from "../ui/RichText.astro";
+import Check from "../icons/Check.astro";
+import type { Media } from "../../../types/media";
+import type {
+  CallToAction as CTA,
+  Categoria,
+  Cierre,
+  PuntoClave,
+  Texto,
+  Trabajo,
+} from "../../../types/contenido";
+
+interface Props {
+  /* Encabezado */
+  etiqueta?: string;
+  titulo: string;
+  subtitulo?: string;
+  imagen?: Media | null;
+  callToAction?: CTA | null;
+
+  /* Introducción */
+  introTitulo?: string;
+  introMensaje?: Texto;
+  puntosClave?: PuntoClave[];
+
+  /* Categorías: el template sabe CUÁLES son, no CÓMO se ven.
+     La página decide el diseño pasando un componente al slot "categorias". */
+  categoriasEtiqueta?: string;
+  categoriasTitulo?: string;
+  categoriasSubtitulo?: string;
+  categorias?: Categoria[];
+  categoriasTono?: "claro" | "oscuro";
+
+  /* Trabajos realizados */
+  trabajosEtiqueta?: string;
+  trabajosTitulo?: string;
+  trabajosSubtitulo?: string;
+  trabajos?: Trabajo[];
+  trabajosTono?: "claro" | "oscuro";
+
+  /* Cierre orientado a contactar ventas */
+  cierre?: Cierre | null;
+}
+
+const {
+  etiqueta,
+  titulo,
+  subtitulo,
+  imagen,
+  callToAction,
+  introTitulo,
+  introMensaje,
+  puntosClave = [],
+  categoriasEtiqueta,
+  categoriasTitulo,
+  categoriasSubtitulo,
+  categorias = [],
+  categoriasTono = "claro",
+  trabajosEtiqueta,
+  trabajosTitulo,
+  trabajosSubtitulo,
+  trabajos = [],
+  trabajosTono = "oscuro",
+  cierre,
+} = Astro.props;
+
+const hayIntro = !!introTitulo || !!introMensaje || puntosClave.length > 0;
+const categoriasOscuro = categoriasTono === "oscuro";
+---
+
+<ServicioHero
+  etiqueta={etiqueta}
+  titulo={titulo}
+  subtitulo={subtitulo}
+  media={imagen}
+  callToAction={callToAction}
+  migas={[
+    { nombre: "Inicio", href: "/" },
+    { nombre: "Servicios", href: "/#servicios" },
+    { nombre: titulo },
+  ]}
+/>
+
+{
+  hayIntro && (
+    <section class="bg-white py-16 sm:py-20">
+      <div class="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
+        <div>
+          {introTitulo && (
+            <h2 class="font-hero text-2xl font-bold leading-tight text-slate-900 sm:text-3xl md:text-4xl">
+              {introTitulo}
+            </h2>
+          )}
+          {introMensaje && (
+            <RichText
+              contenido={introMensaje}
+              class="mt-5 text-sm leading-relaxed text-slate-600 sm:text-base"
+            />
+          )}
+        </div>
+
+        {puntosClave.length > 0 && (
+          <ul class="grid content-start gap-3 rounded-3xl bg-slate-50 p-6 sm:p-8">
+            {puntosClave.map((punto) => (
+              <li class="flex items-start gap-3 text-sm text-slate-700 sm:text-base">
+                <Check class="mt-1 h-4 w-4 shrink-0 text-primary" />
+                <span>{punto.texto}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  )
+}
+
+{
+  categorias.length > 0 && (
+    <section
+      id="categorias"
+      class:list={[
+        "py-20 sm:py-28",
+        categoriasOscuro ? "bg-slate-950" : "bg-slate-50",
+      ]}
+    >
+      <div class="mx-auto max-w-6xl px-6">
+        <SectionHeading
+          etiqueta={categoriasEtiqueta}
+          titulo={categoriasTitulo}
+          subtitulo={categoriasSubtitulo}
+          tono={categoriasTono}
+        />
+
+        <div class="mt-14">
+          {/* La página inyecta aquí el diseño que quiera para las categorías. */}
+          <slot name="categorias">
+            <CategoriasGrid categorias={categorias} tono={categoriasTono} />
+          </slot>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<slot />
+
+<Galeria
+  id="trabajos"
+  etiqueta={trabajosEtiqueta}
+  titulo={trabajosTitulo}
+  subtitulo={trabajosSubtitulo}
+  trabajos={trabajos}
+  tono={trabajosTono}
+/>
+
+<CierreContacto cierre={cierre} />

@@ -1,0 +1,92 @@
+---
+import { Image } from "astro:assets";
+import Check from "../icons/Check.astro";
+import type { Categoria } from "../../../types/contenido";
+
+interface Props {
+  categorias: Categoria[];
+  tono?: "claro" | "oscuro";
+}
+
+const { categorias = [], tono = "claro" } = Astro.props;
+const esOscuro = tono === "oscuro";
+---
+
+<div class="space-y-20 sm:space-y-28">
+  {
+    categorias.map((categoria, i) => (
+      <article class="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
+        <div
+          class:list={[
+            "group relative overflow-hidden rounded-3xl",
+            i % 2 === 1 && "lg:order-2",
+          ]}
+        >
+          {categoria.imagen?.url ? (
+            <Image
+              src={categoria.imagen.url}
+              alt={categoria.imagen.alt ?? categoria.nombre}
+              width={categoria.imagen.width ?? 900}
+              height={categoria.imagen.height ?? 700}
+              class="aspect-[5/4] w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div class="aspect-[5/4] w-full bg-slate-800" />
+          )}
+
+          <span
+            class:list={[
+              "font-hero absolute left-5 top-5 flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold backdrop-blur-sm",
+              "bg-black/50 text-secondary ring-1 ring-secondary/40",
+            ]}
+          >
+            {String(i + 1).padStart(2, "0")}
+          </span>
+        </div>
+
+        <div class={i % 2 === 1 ? "lg:order-1" : ""}>
+          <h3
+            class:list={[
+              "font-hero text-2xl font-bold sm:text-3xl",
+              esOscuro ? "text-white" : "text-slate-900",
+            ]}
+          >
+            {categoria.nombre}
+          </h3>
+
+          <span class="mt-4 block h-px w-16 bg-gradient-to-r from-secondary to-transparent" />
+
+          {categoria.descripcion && (
+            <p
+              class:list={[
+                "mt-5 text-sm leading-relaxed sm:text-base",
+                esOscuro ? "text-white/60" : "text-slate-600",
+              ]}
+            >
+              {categoria.descripcion}
+            </p>
+          )}
+
+          {categoria.items && categoria.items.length > 0 && (
+            <ul class="mt-7 grid gap-2.5 sm:grid-cols-2">
+              {categoria.items.map((item) => (
+                <li
+                  class:list={[
+                    "flex items-start gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                    esOscuro
+                      ? "bg-white/[0.04] text-white/75 hover:bg-white/[0.08]"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100",
+                  ]}
+                >
+                  <Check class="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                  <span>{item.nombre}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </article>
+    ))
+  }
+</div>

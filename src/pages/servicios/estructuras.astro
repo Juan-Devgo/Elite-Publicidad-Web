@@ -1,0 +1,29 @@
+---
+import { getServicio } from "../../../lib/content-manager";
+import { mapServicio } from "../../../lib/utils";
+import Main from "../../layouts/main.astro";
+import ServicioTemplate from "../../components/servicios/ServicioTemplate.astro";
+import CategoriasGrid from "../../components/servicios/CategoriasGrid.astro";
+
+const servicio = mapServicio(await getServicio("estructuras"));
+
+const titulo = servicio.titulo ?? "Estructuras";
+---
+
+<Main
+  titulo={servicio.metaTitulo ?? `${titulo} | Élite Publicidad`}
+  descripcion={servicio.metaDescripcion}
+>
+  <ServicioTemplate
+    {...servicio}
+    titulo={titulo}
+    categoriasTono="oscuro"
+    trabajosTono="claro"
+  >
+    <CategoriasGrid
+      slot="categorias"
+      categorias={servicio.categorias}
+      tono="oscuro"
+    />
+  </ServicioTemplate>
+</Main>

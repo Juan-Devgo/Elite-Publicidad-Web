@@ -1,0 +1,86 @@
+---
+import { Image } from "astro:assets";
+import Check from "../icons/Check.astro";
+import type { Categoria } from "../../../types/contenido";
+
+interface Props {
+  categorias: Categoria[];
+  tono?: "claro" | "oscuro";
+}
+
+const { categorias = [], tono = "claro" } = Astro.props;
+const esOscuro = tono === "oscuro";
+---
+
+<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  {
+    categorias.map((categoria) => (
+      <article
+        class:list={[
+          "group flex flex-col overflow-hidden rounded-3xl border transition-all duration-500",
+          esOscuro
+            ? "border-white/10 bg-white/[0.03] hover:border-secondary/50 hover:bg-white/[0.06]"
+            : "border-slate-200 bg-white shadow-sm hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-slate-900/10",
+        ]}
+      >
+        <div class="relative aspect-[4/3] overflow-hidden">
+          {categoria.imagen?.url ? (
+            <Image
+              src={categoria.imagen.url}
+              alt={categoria.imagen.alt ?? categoria.nombre}
+              width={categoria.imagen.width ?? 800}
+              height={categoria.imagen.height ?? 600}
+              class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div class="h-full w-full bg-slate-800" />
+          )}
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        </div>
+
+        <div class="flex flex-1 flex-col p-6 sm:p-7">
+          <h3
+            class:list={[
+              "font-hero text-lg font-bold transition-colors duration-300 sm:text-xl",
+              esOscuro
+                ? "text-white group-hover:text-secondary"
+                : "text-slate-900 group-hover:text-primary",
+            ]}
+          >
+            {categoria.nombre}
+          </h3>
+
+          {categoria.descripcion && (
+            <p
+              class:list={[
+                "mt-3 text-sm leading-relaxed",
+                esOscuro ? "text-white/55" : "text-slate-600",
+              ]}
+            >
+              {categoria.descripcion}
+            </p>
+          )}
+
+          {categoria.items && categoria.items.length > 0 && (
+            <ul
+              class:list={[
+                "mt-5 space-y-2 border-t pt-5 text-sm",
+                esOscuro ? "border-white/10" : "border-slate-100",
+              ]}
+            >
+              {categoria.items.map((item) => (
+                <li class="flex items-start gap-2.5">
+                  <Check class="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                  <span class={esOscuro ? "text-white/70" : "text-slate-700"}>
+                    {item.nombre}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </article>
+    ))
+  }
+</div>
