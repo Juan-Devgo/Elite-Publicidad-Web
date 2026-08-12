@@ -3,6 +3,9 @@ import qs from "qs";
 export const CMS_BASE_URL =
   import.meta.env.PUBLIC_CMS_URL ?? "http://localhost:1337";
 
+const MEDIA_FIELDS = ["name", "alternativeText", "url", "formats"];
+const MEDIA = { fields: MEDIA_FIELDS };
+
 export async function getNavbar() {
   const query = qs.stringify(
     {
@@ -69,6 +72,101 @@ export async function getHeaderInicio() {
 
   const content = await getContent("/api/header-inicio" + "?" + query);
   return content?.data;
+}
+
+/** Single type `servicios-inicio`: los círculos de servicios del home. */
+export async function getServiciosInicio() {
+  const query = qs.stringify(
+    {
+      populate: {
+        servicios: {
+          populate: {
+            imagen: MEDIA,
+          },
+        },
+      },
+    },
+    { encodeValuesOnly: true },
+  );
+
+  const content = await getContent("/api/servicios-inicio" + "?" + query);
+  return content?.data;
+}
+
+/** Single type `horario-ubicacion`: horario de atención + ubicación del home. */
+export async function getHorarioUbicacion() {
+  const query = qs.stringify(
+    {
+      populate: {
+        horarios: true,
+        ubicaciones: true,
+        callToAction: true,
+      },
+    },
+    { encodeValuesOnly: true },
+  );
+
+  const content = await getContent("/api/horario-ubicacion" + "?" + query);
+  return content?.data;
+}
+
+/** Single type `galeria-inicio`: galería de trabajos realizados del home. */
+export async function getGaleriaInicio() {
+  const query = qs.stringify(
+    {
+      populate: {
+        trabajos: {
+          populate: {
+            image: MEDIA,
+          },
+        },
+        callToAction: true,
+      },
+    },
+    { encodeValuesOnly: true },
+  );
+
+  const content = await getContent("/api/galeria-inicio" + "?" + query);
+  return content?.data;
+}
+
+/**
+ * Collection type `servicios`: una entrada por página de servicio
+ * (impresiones, visibilidad, insumos, estructuras), identificada por `slug`.
+ */
+export async function getServicio(slug: string) {
+  const query = qs.stringify(
+    {
+      filters: {
+        slug: { $eq: slug },
+      },
+      populate: {
+        imagen: MEDIA,
+        callToAction: true,
+        puntosClave: true,
+        categorias: {
+          populate: {
+            imagen: MEDIA,
+            items: true,
+          },
+        },
+        trabajos: {
+          populate: {
+            image: MEDIA,
+          },
+        },
+        cierre: {
+          populate: {
+            callToAction: true,
+          },
+        },
+      },
+    },
+    { encodeValuesOnly: true },
+  );
+
+  const content = await getContent("/api/servicios" + "?" + query);
+  return content?.data?.[0] ?? null;
 }
 
 export async function getWhatsAppButton() {
