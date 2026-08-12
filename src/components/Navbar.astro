@@ -1,32 +1,31 @@
 ---
 import { getImage } from "astro:assets";
 import type { Media } from "../../types/media";
+import type { Page } from "../../types/layout";
 import NavbarClient from "./NavbarClient";
 
 interface Props {
-  logo: Media;
-  paginas: {
-    nombre: string;
-    href: string;
-    subpaginas?: {
-      nombre: string;
-      href: string;
-    }[];
-  }[];
+  logo?: Media | null;
+  paginas: Page[];
 }
 
 const { logo, paginas } = Astro.props;
 
-const logoImg = await getImage({
-  src: logo.url ?? "",
-  width: 150,
-  height: 50,
-});
+// El CMS puede no responder: sin logo, la navegación se muestra igual.
+  // 1024×682 source → keep aspect (~3:2). Display height ~56px (h-14).
+  const logoImg = logo?.url
+  ? await getImage({
+      src: logo.url,
+      width: 240,
+      height: 160,
+      fit: "contain",
+    })
+  : null;
 ---
 
 <NavbarClient
-  logoSrc={logoImg.src}
-  logoAlt={logo.alt ?? "Logo de la empresa"}
+  logoSrc={logoImg?.src}
+  logoAlt={logo?.alt ?? "Logo de la empresa"}
   paginas={paginas}
   client:load
 />

@@ -1,0 +1,267 @@
+---
+import { Image } from "astro:assets";
+import SectionHeading from "./ui/SectionHeading.astro";
+import CallToAction from "./ui/CallToAction.astro";
+import type { CallToAction as CTA, Trabajo } from "../../types/contenido";
+
+interface Props {
+  id?: string;
+  etiqueta?: string;
+  titulo?: string;
+  subtitulo?: string;
+  trabajos: Trabajo[];
+  callToAction?: CTA | null;
+  /** Paleta de la sección. */
+  tono?: "claro" | "oscuro";
+  /** Muestra los chips para filtrar por categoría. */
+  filtros?: boolean;
+  class?: string;
+}
+
+const {
+  id = "trabajos",
+  etiqueta,
+  titulo,
+  subtitulo,
+  trabajos = [],
+  callToAction,
+  tono = "oscuro",
+  filtros = true,
+  class: className = "",
+} = Astro.props;
+
+const esOscuro = tono === "oscuro";
+
+// Categorías únicas, en el orden en que aparecen en el CMS.
+const categorias = [
+  ...new Set(trabajos.map((t) => t.categoria).filter(Boolean) as string[]),
+];
+const mostrarFiltros = filtros && categorias.length > 1;
+---
+
+{
+  trabajos.length > 0 && (
+    <section
+      id={id}
+      data-galeria
+      class:list={[
+        "relative py-20 sm:py-28",
+        esOscuro ? "bg-slate-950" : "bg-white",
+        className,
+      ]}
+    >
+      {esOscuro && (
+        <div
+          class="pointer-events-none absolute inset-0"
+          style="background: radial-gradient(70% 60% at 80% 0%, #02EFD611 0%, transparent 60%);"
+        />
+      )}
+
+      <div class="relative z-10 mx-auto max-w-6xl px-6">
+        <SectionHeading
+          etiqueta={etiqueta}
+          titulo={titulo}
+          subtitulo={subtitulo}
+          tono={tono}
+        />
+
+        {mostrarFiltros && (
+          <div class="mt-10 flex flex-wrap justify-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              data-filtro="todos"
+              aria-pressed="true"
+              class:list={[
+                "rounded-full border px-4 py-2 text-[11px] font-bold uppercase cursor-pointer tracking-widest transition-all duration-300 sm:text-xs",
+                esOscuro
+                  ? "border-white/15 text-white/60 hover:border-secondary/60 hover:text-secondary aria-pressed:border-secondary aria-pressed:bg-secondary/10 aria-pressed:text-secondary"
+                  : "border-slate-200 text-slate-500 hover:border-primary hover:text-primary aria-pressed:border-primary aria-pressed:bg-primary/5 aria-pressed:text-primary",
+              ]}
+            >
+              Todos
+            </button>
+            {categorias.map((categoria) => (
+              <button
+                type="button"
+                data-filtro={categoria}
+                aria-pressed="false"
+                class:list={[
+                  "rounded-full border px-4 py-2 text-[11px] font-bold uppercase cursor-pointer tracking-widest transition-all duration-300 sm:text-xs",
+                  esOscuro
+                    ? "border-white/15 text-white/60 hover:border-secondary/60 hover:text-secondary aria-pressed:border-secondary aria-pressed:bg-secondary/10 aria-pressed:text-secondary"
+                    : "border-slate-200 text-slate-500 hover:border-primary hover:text-primary aria-pressed:border-primary aria-pressed:bg-primary/5 aria-pressed:text-primary",
+                ]}
+              >
+                {categoria}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div class="mt-12 grid auto-rows-40 grid-cols-2 gap-3 sm:auto-rows-50 sm:gap-4 md:grid-cols-4">
+          {trabajos.map((trabajo) => (
+            <button
+              type="button"
+              data-trabajo
+              data-categoria={trabajo.categoria ?? ""}
+              data-titulo={trabajo.titulo ?? ""}
+              data-descripcion={trabajo.descripcion ?? ""}
+              class:list={[
+                "group relative overflow-hidden rounded-2xl text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary",
+                trabajo.destacado && "col-span-2 row-span-2",
+              ]}
+            >
+              {trabajo.imagen?.url ? (
+                <Image
+                  src={trabajo.imagen.url}
+                  alt={
+                    trabajo.imagen.alt ?? trabajo.titulo ?? "Trabajo realizado"
+                  }
+                  width={trabajo.imagen.width ?? 900}
+                  height={trabajo.imagen.height ?? 900}
+                  class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+              ) : (
+                <div class="h-full w-full bg-slate-800" />
+              )}
+
+              <div class="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-100" />
+
+              <div class="absolute inset-x-0 bottom-0 translate-y-2 p-4 opacity-0 transition-all curosr-pointer duration-500 group-hover:translate-y-0 group-hover:opacity-100 sm:p-5">
+                {trabajo.categoria && (
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-secondary">
+                    {trabajo.categoria}
+                  </p>
+                )}
+                {trabajo.titulo && (
+                  <h3 class="font-hero mt-1 text-sm font-bold text-white sm:text-base">
+                    {trabajo.titulo}
+                  </h3>
+                )}
+              </div>
+
+              <span class="absolute right-3 top-3 rounded-full bg-black/50 p-2 text-white opacity-0 curosr-pointer backdrop-blur-sm transition-all duration-500 group-hover:opacity-100 hover:scale-130">
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21 21l-4.35-4.35M11 18a7 7 0 110-14 7 7 0 010 14zM11 8v6M8 11h6"
+                  />
+                </svg>
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {callToAction?.label && (
+          <div class="mt-14 text-center">
+            <CallToAction
+              label={callToAction.label}
+              href={callToAction.href}
+              nuevaPestania={callToAction.nuevaPestania}
+            />
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+<script>
+  type Galeria = HTMLElement;
+
+  function crearLightbox() {
+    const existente = document.getElementById("galeria-lightbox");
+    if (existente) return existente as HTMLDialogElement;
+
+    const dialog = document.createElement("dialog");
+    dialog.id = "galeria-lightbox";
+    dialog.className =
+      "backdrop:bg-black/80 backdrop:backdrop-blur-sm bg-transparent p-0 max-w-none max-h-none w-full h-full m-0 overflow-hidden";
+    dialog.innerHTML = `
+      <div class="relative flex h-full w-full items-center justify-center p-4 sm:p-10" data-fondo>
+        <button type="button" data-cerrar aria-label="Cerrar"
+          class="absolute right-4 top-4 z-10 rounded-full bg-white/10 p-3 text-white transition-colors cursor-pointer hover:bg-secondary hover:text-black">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+        <figure class="max-h-full w-full max-w-5xl">
+          <img data-imagen alt="" class="mx-auto max-h-[75vh] w-auto rounded-2xl object-contain shadow-2xl" />
+          <figcaption class="mt-5 text-center">
+            <p data-categoria class="text-[10px] font-bold uppercase tracking-widest text-secondary"></p>
+            <h3 data-titulo class="mt-1 text-lg font-bold text-white sm:text-xl"></h3>
+            <p data-descripcion class="mx-auto mt-2 max-w-xl text-sm text-white/60"></p>
+          </figcaption>
+        </figure>
+      </div>
+    `;
+    document.body.appendChild(dialog);
+
+    const cerrar = () => dialog.close();
+    dialog.querySelector("[data-cerrar]")?.addEventListener("click", cerrar);
+    dialog.querySelector("[data-fondo]")?.addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) cerrar();
+    });
+
+    return dialog;
+  }
+
+  function abrirLightbox(boton: HTMLElement) {
+    const dialog = crearLightbox();
+    const img = boton.querySelector("img");
+    const destino = dialog.querySelector<HTMLImageElement>("[data-imagen]");
+    if (img && destino) {
+      destino.src = img.currentSrc || img.src;
+      destino.alt = img.alt;
+    }
+
+    const set = (selector: string, valor: string) => {
+      const el = dialog.querySelector<HTMLElement>(selector);
+      if (!el) return;
+      el.textContent = valor;
+      el.classList.toggle("hidden", !valor);
+    };
+
+    set("[data-categoria]", boton.dataset.categoria ?? "");
+    set("[data-titulo]", boton.dataset.titulo ?? "");
+    set("[data-descripcion]", boton.dataset.descripcion ?? "");
+
+    dialog.showModal();
+  }
+
+  function activarGaleria(galeria: Galeria) {
+    const tarjetas = galeria.querySelectorAll<HTMLElement>("[data-trabajo]");
+    const chips = galeria.querySelectorAll<HTMLElement>("[data-filtro]");
+
+    tarjetas.forEach((tarjeta) =>
+      tarjeta.addEventListener("click", () => abrirLightbox(tarjeta)),
+    );
+
+    chips.forEach((chip) =>
+      chip.addEventListener("click", () => {
+        const filtro = chip.dataset.filtro ?? "todos";
+
+        chips.forEach((c) =>
+          c.setAttribute("aria-pressed", String(c === chip)),
+        );
+
+        tarjetas.forEach((tarjeta) => {
+          const visible =
+            filtro === "todos" || tarjeta.dataset.categoria === filtro;
+          tarjeta.classList.toggle("hidden", !visible);
+        });
+      }),
+    );
+  }
+
+  document.querySelectorAll<Galeria>("[data-galeria]").forEach(activarGaleria);
+</script>

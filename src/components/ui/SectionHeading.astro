@@ -1,0 +1,69 @@
+---
+interface Props {
+  etiqueta?: string;
+  titulo?: string;
+  subtitulo?: string;
+  /** Paleta según el fondo de la sección. */
+  tono?: "claro" | "oscuro";
+  alineacion?: "centro" | "izquierda";
+  class?: string;
+}
+
+const {
+  etiqueta,
+  titulo,
+  subtitulo,
+  tono = "oscuro",
+  alineacion = "centro",
+  class: className = "",
+} = Astro.props;
+
+const esOscuro = tono === "oscuro";
+const centrado = alineacion === "centro";
+---
+
+<div
+  class:list={[
+    "max-w-3xl",
+    centrado ? "mx-auto text-center" : "text-left",
+    className,
+  ]}
+>
+  {
+    etiqueta && (
+      <p class="text-secondary uppercase tracking-[0.25em] text-[10px] sm:text-xs font-bold mb-3 animate-fade-in">
+        {etiqueta}
+      </p>
+    )
+  }
+  {
+    titulo && (
+      <h2
+        class:list={[
+          "font-hero font-bold leading-tight text-3xl sm:text-4xl md:text-5xl",
+          esOscuro ? "text-white" : "text-slate-900",
+        ]}
+      >
+        {titulo}
+      </h2>
+    )
+  }
+  {
+    subtitulo && (
+      <p
+        class:list={[
+          "mt-4 text-sm sm:text-base md:text-lg leading-relaxed",
+          esOscuro ? "text-white/60" : "text-slate-600",
+        ]}
+      >
+        {subtitulo}
+      </p>
+    )
+  }
+  <span
+    class:list={[
+      "mt-6 block h-px w-24 bg-linear-to-r from-secondary to-transparent",
+      centrado &&
+        "mx-auto bg-linear-to-r from-transparent via-secondary to-transparent",
+    ]}></span>
+</div>

@@ -10,7 +10,7 @@ import Close from "./icons/Close";
 import type { Page } from "../../types/layout";
 
 interface Props {
-  logoSrc: string;
+  logoSrc?: string;
   logoAlt: string;
   paginas: Page[];
 }
@@ -177,13 +177,19 @@ export default function NavbarClient({ logoSrc, logoAlt, paginas }: Props) {
       <div className="w-full px-4 sm:px-6 lg:px-10 py-3 flex items-center">
         {/* Logo */}
         <a href="/" className="shrink-0 mr-4">
-          <img
-            src={logoSrc}
-            alt={logoAlt}
-            width={200}
-            height={75}
-            className="h-10 w-auto object-contain"
-          />
+          {logoSrc ? (
+            <img
+              src={logoSrc}
+              alt={logoAlt}
+              width={240}
+              height={160}
+              className="h-12 sm:h-14 w-auto max-w-44 object-contain object-left"
+            />
+          ) : (
+            <span className="font-hero text-lg font-bold tracking-wide">
+              {logoAlt}
+            </span>
+          )}
         </a>
 
         {/* Desktop nav */}

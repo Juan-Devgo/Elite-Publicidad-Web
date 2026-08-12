@@ -1,0 +1,23 @@
+---
+import { BlocksRenderer } from "@strapi/blocks-react-renderer";
+import type { Texto } from "../../../types/contenido";
+
+interface Props {
+  contenido: Texto;
+  class?: string;
+}
+
+const { contenido, class: className = "" } = Astro.props;
+
+const esBloques = Array.isArray(contenido);
+const esTexto = typeof contenido === "string" && contenido.trim().length > 0;
+---
+
+{
+  esBloques && (
+    <div class:list={["space-y-4", className]}>
+      <BlocksRenderer content={contenido as any} />
+    </div>
+  )
+}
+{esTexto && <p class={className}>{contenido}</p>}

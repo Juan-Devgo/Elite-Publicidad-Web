@@ -1,18 +1,12 @@
 ---
 interface Props {
-  className?: string;
+  class?: string;
 }
 
-const { className } = Astro.props;
+const { class: className = "w-3.5 h-3.5 shrink-0 text-secondary" } = Astro.props;
 ---
 
-<svg
-  class="w-3.5 h-3.5 shrink-0 text-secondary"
-  fill="none"
-  stroke="currentColor"
-  viewBox="0 0 24 24"
-  class={className}
->
+<svg class={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
   <path
     stroke-linecap="round"
     stroke-linejoin="round"

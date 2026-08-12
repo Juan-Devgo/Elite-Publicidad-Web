@@ -1,26 +1,18 @@
 ---
 import { Image } from "astro:assets";
 import { type Media } from "../../types/media";
-import {
-  BlocksRenderer,
-  type BlocksContent,
-} from "@strapi/blocks-react-renderer";
+import type { CallToAction as CTA, Texto } from "../../types/contenido";
+import RichText from "./ui/RichText.astro";
 import CallToAction from "./ui/CallToAction.astro";
 
 interface Props {
-  titulo: string;
-  mensaje: BlocksContent;
-  media: Media;
-  callToAction: {
-    label: string;
-    href: string;
-    nuevaPestania: boolean;
-  };
+  titulo?: string;
+  mensaje?: Texto;
+  media?: Media | null;
+  callToAction?: CTA | null;
 }
 
 const { titulo, mensaje, media, callToAction } = Astro.props;
-
-console.log("Tipo de media recibido en IndexHero:", media.type);
 ---
 
 <header
@@ -29,7 +21,7 @@ console.log("Tipo de media recibido en IndexHero:", media.type);
   <!-- Renderizado condicional del media, escoge entre imagen o video -->
 
   {
-    media.url && media.type === "image" && (
+    media?.url && media.type === "image" && (
       <Image
         src={media.url}
         alt={media.alt ?? "Imagen de fondo"}
@@ -42,7 +34,7 @@ console.log("Tipo de media recibido en IndexHero:", media.type);
   }
 
   {
-    media.url && media.type === "video" && (
+    media?.url && media.type === "video" && (
       <video
         class="absolute inset-0 w-full h-full object-cover"
         autoplay
@@ -59,7 +51,7 @@ console.log("Tipo de media recibido en IndexHero:", media.type);
   <!-- Si no hay media o es desconocido, mostramos un fondo oscuro -->
 
   {
-    !media.url || media.type === "unknown" ? (
+    !media?.url || media.type === "unknown" ? (
       <div class="absolute inset-0 bg-slate-900" />
     ) : (
       <div class="absolute inset-0 bg-black/50" />
@@ -86,14 +78,15 @@ console.log("Tipo de media recibido en IndexHero:", media.type);
     }
     {
       mensaje && (
-        <div class="text-sm sm:text-base md:text-lg lg:text-xl text-white/80 mb-10 max-w-xl leading-relaxed animate-pulse-fade-in animation-delay-500">
-          <BlocksRenderer client:load content={mensaje} />
-        </div>
+        <RichText
+          contenido={mensaje}
+          class="text-sm sm:text-base md:text-lg lg:text-xl text-white/80 mb-10 max-w-xl leading-relaxed animate-pulse-fade-in animation-delay-500"
+        />
       )
     }
 
     {
-      callToAction && (
+      callToAction?.label && (
         <CallToAction
           label={callToAction.label}
           href={callToAction.href}
