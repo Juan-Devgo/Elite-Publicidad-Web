@@ -36,7 +36,7 @@ When adding a new CMS-backed section: add a `get*` function in `content-manager.
 
 ### Routes
 
-File-based routing in `src/pages/`: top-level pages (`index`, `nosotros`, `contactanos`) plus a `servicios/` subtree (`impresiones`, `visibilidad`, `insumos`, `estructuras`). `@astrojs/sitemap` auto-generates the sitemap.
+File-based routing in `src/pages/`: top-level pages (`index`, `nosotros`, `contactanos`) plus a `servicios/` subtree (`publicidad-exterior`, `insumos-publicitarios`, `promocionales`, `corte-laser-y-avisos`). `@astrojs/sitemap` auto-generates the sitemap.
 
 ### Conventions
 
