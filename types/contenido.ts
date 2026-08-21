@@ -4,6 +4,12 @@ import type { Media } from "./media";
 /** Texto enriquecido de Strapi (Blocks) o texto plano. */
 export type Texto = BlocksContent | string | null | undefined;
 
+export interface RedSocial {
+  icono: Media;
+  nombre: string;
+  href: string;
+}
+
 export interface CallToAction {
   label: string;
   href: string;

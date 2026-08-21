@@ -18,18 +18,20 @@ const { etiqueta, titulo, subtitulo, servicios = [] } = Astro.props;
   servicios.length > 0 && (
     <section
       id="servicios"
-      class="relative overflow-hidden bg-black py-20 sm:py-28"
+      class="relative overflow-hidden fondo-oscuro py-20 sm:py-28"
     >
       {/* Halo de color detrás de los círculos */}
       <div
         class="pointer-events-none absolute inset-0 opacity-70"
         style="background: radial-gradient(60% 50% at 50% 35%, #1463be22 0%, transparent 70%);"
       />
-      {/* Retícula sutil */}
+      {/* Destellos de secondary en las esquinas */}
       <div
-        class="pointer-events-none absolute inset-0 opacity-[0.06]"
-        style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 64px 64px; mask-image: radial-gradient(ellipse at center, #000 20%, transparent 75%);"
+        class="pointer-events-none absolute inset-0"
+        style="background: radial-gradient(45% 40% at 8% 12%, #02EFD61a 0%, transparent 65%), radial-gradient(45% 40% at 92% 88%, #02EFD614 0%, transparent 65%);"
       />
+      <div class="pointer-events-none absolute -left-24 top-10 h-64 w-64 rounded-full bg-secondary/10 blur-3xl" />
+      <div class="pointer-events-none absolute -right-20 bottom-0 h-72 w-72 rounded-full bg-secondary/[0.07] blur-3xl" />
 
       <div class="relative z-10 mx-auto max-w-6xl px-6">
         <SectionHeading
@@ -40,7 +42,7 @@ const { etiqueta, titulo, subtitulo, servicios = [] } = Astro.props;
         />
 
         <div class="mt-16 grid grid-cols-2 gap-x-6 gap-y-14 sm:gap-x-10 lg:grid-cols-4">
-          {servicios.map((servicio, i) => (
+          {servicios.map((servicio: ServicioCirculo, i: number) => (
             <a
               href={servicio.href}
               class="group flex flex-col items-center text-center focus:outline-none lg:even:mt-12"
@@ -48,36 +50,37 @@ const { etiqueta, titulo, subtitulo, servicios = [] } = Astro.props;
               data-circulo
             >
               <div class="relative aspect-square w-full max-w-55">
-                {/* Anillo giratorio que se enciende al pasar el mouse */}
+                {/* Anillo giratorio que se enciende al pasar el mouse o al
+                    presionar el círculo (táctil, donde no hay hover) */}
                 <div
-                  class="absolute -inset-1 rounded-full opacity-0 blur-[2px] transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100 motion-safe:group-hover:animate-spin"
-                  style="background: conic-gradient(from 0deg, #02EFD6, transparent 35%, #1463be 55%, transparent 85%, #02EFD6); animation-duration: 6s;"
+                  class="absolute -inset-1 rounded-full opacity-0 blur-[2px] transition-opacity duration-1000 ease-out group-hover:opacity-100 group-hover:duration-300 group-focus-visible:opacity-100 group-focus-visible:duration-300 group-active:opacity-100 group-active:duration-300 motion-safe:animate-spin"
+                  style="background: conic-gradient(from 0deg, #02EFD6, transparent 35%, #1463be 55%, transparent 85%, #02EFD6); animation-duration: 6s; will-change: transform;"
                 />
 
-                <div class="relative h-full w-full overflow-hidden rounded-full ring-1 ring-white/15 transition-all duration-500 group-hover:ring-secondary/80 group-hover:[box-shadow:0_0_30px_#02EFD644]">
+                <div class="relative h-full w-full overflow-hidden rounded-full ring-1 ring-white/15 transition-all duration-500 group-hover:ring-secondary/80 group-hover:[box-shadow:0_0_30px_#02EFD644] group-active:ring-secondary/80 group-active:[box-shadow:0_0_30px_#02EFD644]">
                   {servicio.imagen?.url ? (
                     <Image
                       src={servicio.imagen.url}
                       alt={servicio.imagen.alt ?? servicio.nombre}
                       width={servicio.imagen.width ?? 480}
                       height={servicio.imagen.height ?? 480}
-                      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 group-active:scale-110"
                       loading="lazy"
                     />
                   ) : (
                     <div class="h-full w-full bg-slate-800" />
                   )}
 
-                  <div class="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-transparent transition-opacity duration-500 group-hover:from-black/70" />
+                  <div class="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-transparent transition-opacity duration-500 group-hover:from-black/70 group-active:from-black/70" />
 
-                  <span class="absolute inset-x-0 bottom-6 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-secondary opacity-0 transition-all duration-500 group-hover:bottom-8 group-hover:opacity-100">
-                    Ver más
+                  <span class="absolute inset-x-0 bottom-6 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-secondary opacity-0 transition-all duration-500 group-hover:bottom-8 group-hover:opacity-100 group-focus-visible:bottom-8 group-focus-visible:opacity-100 group-active:bottom-8 group-active:opacity-100">
+                    Ver
                     <ArrowRight class="h-3 w-3" />
                   </span>
                 </div>
               </div>
 
-              <h3 class="font-hero mt-6 text-base font-bold text-white transition-colors duration-300 group-hover:text-secondary sm:text-lg">
+              <h3 class="font-hero mt-6 text-base font-bold text-white transition-colors duration-300 group-hover:text-secondary group-active:text-secondary sm:text-lg">
                 {servicio.nombre}
               </h3>
               {servicio.descripcion && (

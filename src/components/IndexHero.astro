@@ -13,11 +13,32 @@ interface Props {
 }
 
 const { titulo, mensaje, media, callToAction } = Astro.props;
+
+/* Los PNG suelen venir con fondo transparente (logos, recortes): en vez de
+   taparlos con las capas negras del hero, se les pone detrás el fondo oscuro
+   con destellos, igual que en las páginas de servicios. */
+const esPng = /\.png(\?|$)/i.test(media?.url ?? "");
+const esImagenRecortada = media?.type === "image" && esPng;
 ---
 
 <header
   class="relative h-screen flex items-center justify-start text-left text-white overflow-hidden"
 >
+  <!-- Fondo oscuro con destellos detrás de los PNG recortados -->
+
+  {
+    esImagenRecortada && (
+      <>
+        <div class="absolute inset-0 fondo-oscuro" />
+        <div
+          class="pointer-events-none absolute inset-0"
+          style="background: radial-gradient(55% 55% at 78% 30%, #02EFD61f 0%, transparent 65%);"
+        />
+        <div class="pointer-events-none absolute -right-24 top-1/4 h-72 w-72 rounded-full bg-secondary/10 blur-3xl" />
+      </>
+    )
+  }
+
   <!-- Renderizado condicional del media, escoge entre imagen o video -->
 
   {
@@ -52,13 +73,21 @@ const { titulo, mensaje, media, callToAction } = Astro.props;
 
   {
     !media?.url || media.type === "unknown" ? (
-      <div class="absolute inset-0 bg-slate-900" />
+      <div class="absolute inset-0 fondo-oscuro" />
     ) : (
-      <div class="absolute inset-0 bg-black/50" />
+      !esImagenRecortada && <div class="absolute inset-0 bg-black/50" />
     )
   }
 
-  <div class="absolute inset-0 bg-black/70"></div>
+  {/* Un velo negro plano apagaría el PNG, así que sobre él solo se oscurece
+      el costado del texto y se deja respirar el resto. */}
+  {
+    esImagenRecortada ? (
+      <div class="absolute inset-0 bg-linear-to-r from-black/85 via-black/45 to-transparent" />
+    ) : (
+      <div class="absolute inset-0 bg-black/70" />
+    )
+  }
 
   <!-- Contenido del hero -->
 

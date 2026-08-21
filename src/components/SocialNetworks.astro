@@ -1,14 +1,10 @@
 ---
 import { Image } from 'astro:assets';
-import type { Media } from '../../types/media';
+import type { RedSocial } from '../../types/contenido';
 
 interface Props {
   className: string;
-  redes: {
-    icono: Media;
-    nombre: string;
-    href: string;
-  }[];
+  redes: RedSocial[];
   size: number;
 }
 
@@ -18,7 +14,7 @@ console.log('Props recibidos en SocialNetworks:', { className, redes, size });
 
 <div class={className}>
   {
-    redes.map((red) => (
+    redes.map((red: RedSocial) => (
       <a
         class="block transition-transform hover:scale-125"
         href={red.href}
@@ -26,7 +22,7 @@ console.log('Props recibidos en SocialNetworks:', { className, redes, size });
         rel="noopener noreferrer"
       >
         <Image
-          src={red.icono.url}
+          src={red.icono.url ?? ""}
           alt={red.icono.alt ?? `Logo de ${red.nombre ?? 'Red Social'}`}
           width={size}
           height={size}

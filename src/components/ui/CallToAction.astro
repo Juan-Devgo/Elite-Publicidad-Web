@@ -16,11 +16,16 @@ const { label, href, nuevaPestania = false } = Astro.props;
   rel={nuevaPestania ? "noopener noreferrer" : undefined}
   class="group inline-flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-4 rounded-lg font-bold text-xs sm:text-sm uppercase tracking-widest transition-all duration-300
   bg-primary text-white border-2 border-primary
-  hover:bg-transparent hover:text-secondary hover:border-secondary
+  bg-[radial-gradient(120%_140%_at_15%_0%,#2f8ae8_0%,#1463be_45%,#0c3a75_100%)]
+  hover:bg-transparent hover:bg-none hover:text-secondary hover:border-secondary
   hover:[box-shadow:0_0_12px_#02EFD6,0_0_30px_#02EFD650]
+  active:bg-transparent active:bg-none active:text-secondary active:border-secondary
+  active:[box-shadow:0_0_12px_#02EFD6,0_0_30px_#02EFD650]
   focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 focus:ring-offset-transparent
   animate-blurred-fade-in animate-duration-700 cta-shine"
 >
   {label}
-  <ArrowRight class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+  <ArrowRight
+    class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-active:translate-x-1"
+  />
 </a>

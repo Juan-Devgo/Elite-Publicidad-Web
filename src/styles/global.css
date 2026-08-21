@@ -73,3 +73,86 @@ html {
   transform: skewX(-20deg);
   animation: cta-shine 4s ease-in-out infinite;
 }
+
+/* ---------------------------------------------------------------
+   Fondos oscuros: negro profundo con destellos de --color-secondary
+   --------------------------------------------------------------- */
+
+.fondo-oscuro {
+  background-color: #000;
+  background-image:
+    radial-gradient(70% 55% at 12% -5%, rgba(2, 239, 214, 0.16) 0%, transparent 62%),
+    radial-gradient(60% 50% at 95% 105%, rgba(2, 239, 214, 0.1) 0%, transparent 60%),
+    linear-gradient(155deg, #000 0%, #021311 48%, #000 100%);
+}
+
+/* Variante espejada, para apilar dos secciones oscuras sin que se repitan */
+.fondo-oscuro-alt {
+  background-color: #000;
+  background-image:
+    radial-gradient(70% 55% at 88% -5%, rgba(2, 239, 214, 0.14) 0%, transparent 62%),
+    radial-gradient(60% 50% at 5% 105%, rgba(2, 239, 214, 0.09) 0%, transparent 60%),
+    linear-gradient(205deg, #000 0%, #021311 48%, #000 100%);
+}
+
+/* Tarjetas/paneles sobre fondo oscuro */
+.panel-oscuro {
+  background-color: #000;
+  background-image:
+    radial-gradient(90% 80% at 0% 0%, rgba(2, 239, 214, 0.14) 0%, transparent 65%),
+    linear-gradient(140deg, rgba(2, 239, 214, 0.07) 0%, transparent 48%);
+  border: 1px solid rgba(2, 239, 214, 0.16);
+  box-shadow: 0 0 40px -20px rgba(2, 239, 214, 0.5) inset;
+}
+
+/* Destello que recorre el elemento periódicamente */
+@keyframes glimmer {
+  0% {
+    transform: translateX(-130%) skewX(-20deg);
+  }
+  55%,
+  100% {
+    transform: translateX(320%) skewX(-20deg);
+  }
+}
+
+.glimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.glimmer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 35%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(2, 239, 214, 0.16) 50%,
+    transparent 100%
+  );
+  animation: glimmer 7s ease-in-out infinite;
+}
+
+/* Línea divisoria con brillo de secondary */
+.borde-glow {
+  border-top: 1px solid transparent;
+  border-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(2, 239, 214, 0.45) 50%,
+      transparent 100%
+    )
+    1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glimmer::before,
+  .cta-shine::after {
+    animation: none;
+  }
+}

@@ -18,7 +18,7 @@ export default function WhatsAppButton({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const previewMsg = mensaje.replace("{nombre}", nombre.trim() || "tú");
+  const previewMsg = mensaje.replace("{nombre}", nombre.trim() || "{tu nombre}");
 
   useEffect(() => {
     if (open) {

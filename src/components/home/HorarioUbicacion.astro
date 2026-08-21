@@ -75,11 +75,25 @@ const centro: [number, number] =
 const hayMapbox = !!mapboxToken;
 const hayGoogle = !!ubicacion?.mapaEmbed;
 const hayPestanias = hayMapbox && hayGoogle;
+
+/* Pestañas con el mismo lenguaje del botón CallToAction (gradiente radial de
+   primary, borde de 2px, mayúsculas espaciadas) pero redondeadas y sin el
+   reflejo que lo recorre. El estado activo lo marca `aria-selected`, así que
+   las variantes de hover se limitan a la pestaña inactiva con `not-*`. */
+const clasePestania = `group inline-flex items-center rounded-full border-2 px-5 py-2 text-xs font-bold uppercase tracking-widest cursor-pointer transition-all duration-300 sm:text-sm
+  border-white/15 bg-transparent text-white/60
+  not-aria-selected:hover:border-secondary not-aria-selected:hover:text-secondary
+  not-aria-selected:hover:[box-shadow:0_0_12px_#02EFD6,0_0_30px_#02EFD650]
+  not-aria-selected:active:border-secondary not-aria-selected:active:text-secondary
+  not-aria-selected:active:[box-shadow:0_0_12px_#02EFD6,0_0_30px_#02EFD650]
+  aria-selected:border-primary aria-selected:bg-primary aria-selected:text-white
+  aria-selected:[background-image:radial-gradient(120%_140%_at_15%_0%,#2f8ae8_0%,#1463be_45%,#0c3a75_100%)]
+  focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-black`;
 ---
 
 {
   hayContenido && (
-    <section id="horario" class="relative bg-gray-950 py-20 sm:py-28">
+    <section id="horario" class="relative fondo-oscuro py-20 sm:py-28">
       <div class="mx-auto max-w-368 px-6">
         <SectionHeading
           etiqueta={etiqueta}
@@ -91,7 +105,7 @@ const hayPestanias = hayMapbox && hayGoogle;
         <div class="mt-14 grid gap-8 lg:grid-cols-12">
           {/* Horario de atención */}
           {horarios.length > 0 && (
-            <div class="relative overflow-hidden rounded-3xl border border-slate-200 bg-black p-8 text-white shadow-xl shadow-slate-900/10 sm:p-10 lg:col-span-4">
+            <div class="relative overflow-hidden rounded-3xl panel-oscuro p-8 text-white shadow-xl shadow-secondary/10 sm:p-10 lg:col-span-4">
               <div
                 class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-50 blur-2xl"
                 style="background: radial-gradient(circle, #02EFD644 0%, transparent 70%);"
@@ -113,7 +127,7 @@ const hayPestanias = hayMapbox && hayGoogle;
                 </div>
 
                 <ul class="mt-8 divide-y divide-white/10">
-                  {horarios.map((h) => (
+                  {horarios.map((h: HorarioDia) => (
                     <li
                       class:list={[
                         "flex items-baseline justify-between gap-4 py-3.5 my-3 text-sm sm:text-base",
@@ -151,7 +165,7 @@ const hayPestanias = hayMapbox && hayGoogle;
 
           {/* Ubicación */}
           {ubicacion && (
-            <div class="overflow-hidden rounded-3xl border border-slate-200 bg-black shadow-xl shadow-slate-900/5 lg:col-span-8">
+            <div class="overflow-hidden rounded-3xl panel-oscuro shadow-xl shadow-secondary/10 lg:col-span-8">
               {(hayMapbox || hayGoogle) && (
                 <div
                   data-ubicacion-mapa
@@ -173,7 +187,7 @@ const hayPestanias = hayMapbox && hayGoogle;
                         aria-controls="panel-ver-mapa"
                         aria-selected="true"
                         data-tab="mapa"
-                        class="rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase tracking-widest cursor-pointer text-white/60 transition-colors hover:text-white aria-selected:border-primary aria-selected:bg-primary aria-selected:text-white sm:text-sm"
+                        class={clasePestania}
                       >
                         Ver Mapa
                       </button>
@@ -185,7 +199,7 @@ const hayPestanias = hayMapbox && hayGoogle;
                         aria-selected="false"
                         tabindex="-1"
                         data-tab="local"
-                        class="rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase tracking-widest cursor-pointer text-white/60 transition-colors hover:text-white aria-selected:border-primary aria-selected:bg-primary aria-selected:text-white sm:text-sm"
+                        class={clasePestania}
                       >
                         Ver Local
                       </button>
@@ -201,7 +215,7 @@ const hayPestanias = hayMapbox && hayGoogle;
                         data-panel="mapa"
                         class="h-72 w-full sm:h-96"
                       >
-                        <div data-mapbox class="h-full w-full bg-gray-900" />
+                        <div data-mapbox class="h-full w-full bg-[#070d17]" />
                         <p
                           data-mapbox-error
                           hidden
@@ -236,6 +250,12 @@ const hayPestanias = hayMapbox && hayGoogle;
               )}
 
               <div class="relative overflow-hidden p-8 sm:p-10">
+                <div
+                  aria-hidden="true"
+                  class="pointer-events-none absolute -left-20 top-2 h-56 w-56 rounded-full opacity-70 blur-2xl"
+                  style="background: radial-gradient(circle, #2f8ae8aa 0%, #1463be55 45%, transparent 72%);"
+                />
+
                 {/* Retícula de puntos en el espacio libre de la derecha. Decorativa: oculta en móvil. */}
                 <div
                   aria-hidden="true"
@@ -248,23 +268,25 @@ const hayPestanias = hayMapbox && hayGoogle;
                   style="background: radial-gradient(circle, #1463be88 0%, transparent 70%);"
                 />
 
-                <div class="relative flex items-start gap-3">
-                  <Location class="mt-1 h-8 w-8 shrink-0 text-primary" />
-                  <div>
+                <div class="relative items-start gap-5">
+                  <div class="flex items-center gap-2">
+                    <Location class="mt-1 h-8 w-8 shrink-0 text-primary" />
                     <h3 class="font-hero text-xl font-bold text-white sm:text-3xl">
                       Dónde estamos
                     </h3>
-                    <p class="mt-2 text-sm leading-relaxed text-slate-200 font-bold sm:text-lg">
+                  </div>
+                  <div class="mr-[25%]">
+                    <p class="mt-5 rounded-xl border-l-4 border-secondary bg-secondary/10 px-4 py-3 text-base font-bold leading-relaxed text-white sm:text-2xl">
                       {ubicacion.direccion}
                       {ubicacion.ciudad && (
                         <>
                           <br />
-                          <span class="text-slate-100">{ubicacion.ciudad}</span>
+                          <span class="text-secondary">{ubicacion.ciudad}</span>
                         </>
                       )}
                     </p>
                     {ubicacion.referencia && (
-                      <p class="mt-2 text-xs text-slate-400 sm:text-sm">
+                      <p class="mt-4 text-xs text-slate-400 sm:text-sm">
                         {ubicacion.referencia}
                       </p>
                     )}
@@ -284,7 +306,7 @@ const hayPestanias = hayMapbox && hayGoogle;
                       href={ubicacion.mapaHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="text-xs font-bold uppercase tracking-widest text-primary underline-offset-4 transition-colors hover:text-secondary hover:underline sm:text-sm"
+                      class="text-xs font-bold uppercase tracking-widest text-primary underline-offset-4 transition-colors hover:text-secondary hover:underline active:text-secondary active:underline sm:text-sm"
                     >
                       Cómo llegar
                     </a>
@@ -301,6 +323,35 @@ const hayPestanias = hayMapbox && hayGoogle;
 
 <script>
   import mapboxgl from "mapbox-gl";
+
+  /* Configuracion del estilo Mapbox Standard*/
+  const CONFIG_BASEMAP = {
+    lightPreset: "dusk",
+    theme: "faded",
+
+    // Superficies
+    // colorLand: "#070d17",
+    // colorWater: "#0a2f4d",
+    // colorGreenspace: "#0b2a24",
+    // colorBuildings: "#12203a",
+    // colorAdminBoundaries: "#1463be",
+
+    // Vialidad: la troncal en primary, el resto apagado para no competir.
+    colorMotorways: "#2f8ae8",
+    colorTrunks: "#1463be",
+    colorRoads: "#243b57",
+
+    // Texto
+    colorPlaceLabels: "#e8f6ff",
+    colorRoadLabels: "#7d93b0",
+    // colorPointOfInterestLabels: "#02efd6",
+
+    // Menos ruido: sin POIs de terceros compitiendo con el marcador propio.
+    showPointOfInterestLabels: false,
+    showTransitLabels: true,
+    showRoadLabels: true,
+    show3dObjects: true,
+  };
 
   const contenedor = document.querySelector<HTMLElement>(
     "[data-ubicacion-mapa]",
@@ -332,10 +383,13 @@ const hayPestanias = hayMapbox && hayGoogle;
           accessToken: token,
           container: nodoMapa,
           style: "mapbox://styles/mapbox/standard",
+          // La configuracion va en el constructor (no en `style.load`) para que
+          // el mapa nunca aparezca con la paleta diurna antes de repintarse.
+          config: { basemap: CONFIG_BASEMAP },
           center: [lng, lat],
-          zoom: 16,
+          zoom: 17,
           pitch: 62,
-          bearing: -20,
+          bearing: -80,
           antialias: true,
           cooperativeGestures: true,
         });
@@ -345,15 +399,9 @@ const hayPestanias = hayMapbox && hayGoogle;
           "bottom-right",
         );
 
-        new mapboxgl.Marker({ color: "#02efd6" })
+        new mapboxgl.Marker({ color: "#FF0000" })
           .setLngLat([lng, lat])
           .addTo(mapa);
-
-        mapa.on("style.load", () => {
-          // El estilo Standard ya trae edificios 3D; ajustamos luz y relieve.
-          mapa?.setConfigProperty("basemap", "lightPreset", "day");
-          mapa?.setConfigProperty("basemap", "showPointOfInterestLabels", true);
-        });
 
         mapa.on("error", mostrarError);
       } catch {

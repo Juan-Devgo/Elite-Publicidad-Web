@@ -2,7 +2,7 @@
 import { getImage } from "astro:assets";
 import type { Media } from "../../types/media";
 import type { Page } from "../../types/layout";
-import NavbarClient from "./NavbarClient";
+import NavbarClient from "./NavbarClient.astro";
 
 interface Props {
   logo?: Media | null;
@@ -27,5 +27,4 @@ const { logo, paginas } = Astro.props;
   logoSrc={logoImg?.src}
   logoAlt={logo?.alt ?? "Logo de la empresa"}
   paginas={paginas}
-  client:load
 />

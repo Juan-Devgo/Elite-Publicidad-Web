@@ -14,7 +14,7 @@ const esOscuro = tono === "oscuro";
 
 <div
   class:list={[
-    "divide-y rounded-3xl border",
+    "mx-auto w-full max-w-6xl divide-y rounded-3xl border",
     esOscuro
       ? "divide-white/10 border-white/10 bg-white/[0.02]"
       : "divide-slate-100 border-slate-200 bg-white",
@@ -22,10 +22,10 @@ const esOscuro = tono === "oscuro";
 >
   {
     categorias.map((categoria, i) => (
-      <article class="group grid items-center gap-6 p-6 transition-colors duration-300 sm:grid-cols-[auto_9rem_1fr] sm:p-8">
+      <article class="group grid items-center gap-8 p-8 transition-colors duration-300 sm:grid-cols-[auto_13rem_1fr] sm:p-10 lg:p-12">
         <span
           class:list={[
-            "font-hero text-3xl font-bold tabular-nums transition-colors duration-300 sm:text-4xl",
+            "font-hero text-4xl font-bold tabular-nums transition-colors duration-300 sm:text-5xl",
             esOscuro
               ? "text-white/15 group-hover:text-secondary"
               : "text-slate-200 group-hover:text-primary",
@@ -39,20 +39,20 @@ const esOscuro = tono === "oscuro";
             <Image
               src={categoria.imagen.url}
               alt={categoria.imagen.alt ?? categoria.nombre}
-              width={categoria.imagen.width ?? 400}
-              height={categoria.imagen.height ?? 400}
-              class="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110 sm:w-36"
+              width={categoria.imagen.width ?? 600}
+              height={categoria.imagen.height ?? 600}
+              class="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110 sm:w-52"
               loading="lazy"
             />
           ) : (
-            <div class="aspect-square w-full bg-slate-800 sm:w-36" />
+            <div class="aspect-square w-full bg-slate-800 sm:w-52" />
           )}
         </div>
 
         <div>
           <h3
             class:list={[
-              "font-hero text-lg font-bold sm:text-xl",
+              "font-hero text-xl font-bold sm:text-2xl",
               esOscuro ? "text-white" : "text-slate-900",
             ]}
           >
@@ -62,7 +62,7 @@ const esOscuro = tono === "oscuro";
           {categoria.descripcion && (
             <p
               class:list={[
-                "mt-2 text-sm leading-relaxed",
+                "mt-3 text-sm leading-relaxed sm:text-base",
                 esOscuro ? "text-white/55" : "text-slate-600",
               ]}
             >
@@ -71,10 +71,10 @@ const esOscuro = tono === "oscuro";
           )}
 
           {categoria.items && categoria.items.length > 0 && (
-            <ul class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            <ul class="mt-6 grid gap-x-6 gap-y-2.5 text-sm sm:grid-cols-2 sm:text-base lg:grid-cols-3">
               {categoria.items.map((item) => (
-                <li class="flex items-center gap-2">
-                  <Check class="h-3.5 w-3.5 shrink-0 text-secondary" />
+                <li class="flex items-start gap-2">
+                  <Check class="mt-1 h-4 w-4 shrink-0 text-secondary" />
                   <span class={esOscuro ? "text-white/70" : "text-slate-700"}>
                     {item.nombre}
                   </span>
