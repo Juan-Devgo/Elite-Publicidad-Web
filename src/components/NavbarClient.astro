@@ -1,0 +1,326 @@
+---
+import Menu from "./icons/Menu.astro";
+import Close from "./icons/Close.astro";
+import type { Page, Subpage } from "../../types/layout";
+
+interface Props {
+  logoSrc?: string;
+  logoAlt: string;
+  paginas: Page[];
+}
+
+const { logoSrc, logoAlt, paginas } = Astro.props;
+
+/*
+ * Página actual — se normaliza (sin barra final, sin query/hash, en
+ * minúsculas) para comparar con los `href` que llegan del CMS.
+ */
+const normalizeHref = (href: string) =>
+  (href.split(/[?#]/)[0].replace(/\/+$/, "") || "/").toLowerCase();
+
+const currentPath = normalizeHref(Astro.url.pathname);
+
+const isCurrent = (href?: string) =>
+  typeof href === "string" && normalizeHref(href) === currentPath;
+
+/* Una página también se marca activa si la ruta actual es una de sus subpáginas. */
+const isPageActive = (pagina: Page) =>
+  isCurrent(pagina.href) ||
+  (pagina.subpaginas ?? []).some((sub: Subpage) => isCurrent(sub.href));
+
+/*
+ * Enlaces de escritorio. El subrayado `after:` ya existía para el hover; en
+ * la página activa queda fijo (`scale-x-100`) y el texto toma el color
+ * secundario de la marca. El `text-shadow` mantiene el contraste cuando el
+ * navbar está transparente sobre imágenes claras.
+ */
+const linkBaseClass =
+  "block font-semibold text-base xl:text-lg py-2 px-2 whitespace-nowrap transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary after:transition-transform after:duration-300 after:origin-left";
+
+const linkClass = (active: boolean) =>
+  active
+    ? `${linkBaseClass} text-secondary after:scale-x-100 [text-shadow:0_0_12px_rgba(2,239,214,0.35)]`
+    : `${linkBaseClass} hover:text-secondary after:scale-x-0 hover:after:scale-x-100`;
+
+const dropdownClass =
+  "bg-[linear-gradient(135deg,rgba(5,18,20,0.88)_0%,rgba(2,68,74,0.82)_100%)] backdrop-blur-sm border border-white/8";
+
+/*
+ * Enlaces de subpágina dentro del dropdown de escritorio.
+ */
+const subLinkClass = (active: boolean) =>
+  active
+    ? "block px-5 py-3 text-base font-medium text-center text-secondary bg-white/10"
+    : "block px-5 py-3 text-base font-medium text-center text-white/90 hover:text-white";
+
+/*
+ * Menú móvil — el fondo del navbar siempre está visible cuando está abierto,
+ * así que basta con la barra lateral secundaria + un realce del fondo.
+ */
+const mobileLinkClass = (active: boolean) =>
+  active
+    ? "block py-3 pl-5 pr-6 border-l-4 border-secondary bg-white/10 font-semibold text-lg text-secondary transition-colors"
+    : "block px-6 py-3 font-semibold text-lg hover:bg-white/10 active:bg-white/20 transition-colors";
+
+const mobileSubLinkClass = (active: boolean) =>
+  active
+    ? "block px-10 py-2.5 text-sm text-secondary bg-white/10 transition-colors"
+    : "block px-10 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors";
+
+/*
+ * DESACTIVADO — selector "Conócenos".
+ *
+ * Entre 1024px y ~1090px los enlaces completos no caben: las dos últimas
+ * páginas se ocultaban y se agrupaban bajo el selector "Conócenos". Se
+ * desactiva porque la página "Nosotros" no se incluye por ahora; el código
+ * se conserva para reutilizarlo si se agrega otra página en el futuro.
+ *
+ * const paginasConocenos = paginas.slice(-2);
+ *
+ * const conocenosDropdownClass =
+ *   "bg-linear-to-r from-black/80 from-5% to-[#02444a]/80 backdrop-blur-sm border border-white/8";
+ */
+---
+
+<nav class="fixed top-0 left-0 right-0 z-50 text-white animate-slide-in-top">
+  {/*
+    Capa de fondo — transparente mientras el scroll está en el tope de la
+    página; el script de abajo quita `opacity-0` al hacer scroll o al abrir
+    el menú móvil. En -z-10 para no tapar los dropdowns.
+  */}
+  <div
+    id="navbar-background"
+    class="absolute inset-0 -z-10 rounded-b-3xl bg-linear-to-r from-black/80 from-5% to-[#02444a]/80 backdrop-blur-sm transition-opacity duration-300 opacity-0"
+    style="filter: drop-shadow(0 4px 24px rgba(0,0,0,0.5))"
+  >
+  </div>
+
+  <div class="w-full px-4 sm:px-6 lg:px-10 py-3 flex items-center">
+    {/* Logo */}
+    <a href="/" class="shrink-0 mr-4">
+      {
+        logoSrc ? (
+          <img
+            src={logoSrc}
+            alt={logoAlt}
+            width={240}
+            height={160}
+            class="h-12 sm:h-14 w-auto max-w-44 object-contain object-left"
+          />
+        ) : (
+          <span class="font-hero text-lg font-bold tracking-wide">
+            {logoAlt}
+          </span>
+        )
+      }
+    </a>
+
+    {/* Navegación de escritorio */}
+    <ul class="hidden lg:flex flex-1 items-center justify-evenly gap-x-2">
+      {
+        paginas.map((pagina) => {
+          const activa = isPageActive(pagina);
+          return (
+            /*
+             * DESACTIVADO junto con el selector "Conócenos": las dos últimas
+             * páginas se ocultaban entre 1024px y ~1090px.
+             *
+             * class:list={[
+             *   "relative group",
+             *   index >= paginas.length - 2 && "max-[1089px]:hidden",
+             * ]}
+             */
+            <li class="relative group">
+              <a
+                href={pagina.href}
+                class={linkClass(activa)}
+                aria-current={isCurrent(pagina.href) ? "page" : undefined}
+              >
+                {pagina.nombre}
+              </a>
+              {pagina.subpaginas && pagina.subpaginas.length > 0 && (
+                <div class="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50 opacity-0 invisible pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:visible group-focus-within:pointer-events-auto transition-all duration-300">
+                  <ul
+                    class={`text-white rounded-2xl shadow-2xl min-w-50 overflow-hidden ${dropdownClass}`}
+                  >
+                    {pagina.subpaginas.map((sub) => (
+                      <li class="hover:bg-white/10 transition-colors duration-150">
+                        <a
+                          href={sub.href}
+                          class={subLinkClass(isCurrent(sub.href))}
+                          aria-current={isCurrent(sub.href) ? "page" : undefined}
+                        >
+                          {sub.nombre}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </li>
+          );
+        })
+      }
+      {/*
+        DESACTIVADO — selector "Conócenos": sólo visible entre 1024px y
+        ~1090px. A diferencia de los otros dropdowns, se abría y cerraba con
+        clic (el script alternaba `data-open` en este `li`). Se conserva para
+        reutilizarlo si se agrega otra página en el futuro.
+
+        <li
+          id="navbar-conocenos"
+          class="relative group hidden max-[1090px]:block"
+        >
+          <button
+            id="navbar-conocenos-button"
+            type="button"
+            class={`${linkClass(false)} cursor-pointer bg-transparent border-0 text-inherit font-inherit`}
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="navbar-conocenos-panel"
+          >
+            Conócenos
+          </button>
+          <div
+            id="navbar-conocenos-panel"
+            class="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50 opacity-0 invisible pointer-events-none group-data-open:opacity-100 group-data-open:visible group-data-open:pointer-events-auto transition-all duration-300"
+          >
+            <ul
+              class={`text-white rounded-2xl shadow-2xl min-w-max overflow-hidden ${conocenosDropdownClass}`}
+            >
+              {
+                paginasConocenos.map((pagina) => (
+                  <li class="hover:bg-white/10 transition-colors duration-150">
+                    <a
+                      href={pagina.href}
+                      class={`${subLinkClass(isCurrent(pagina.href))} whitespace-nowrap`}
+                      aria-current={isCurrent(pagina.href) ? "page" : undefined}
+                    >
+                      {pagina.nombre}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </li>
+      */}
+    </ul>
+
+    {/* Hamburguesa móvil */}
+    <button
+      id="navbar-menu-button"
+      class="lg:hidden ml-auto p-2 rounded-lg hover:bg-white/10 active:bg-white/20 transition-colors"
+      aria-label="Abrir menú de navegación"
+      aria-expanded="false"
+    >
+      <span id="navbar-icon-menu"><Menu className="w-6 h-6" /></span>
+      <span id="navbar-icon-close" class="hidden"
+        ><Close className="w-6 h-6" /></span
+      >
+    </button>
+  </div>
+
+  {/* Menú móvil desplegable — comparte el fondo del navbar */}
+  <div id="navbar-mobile-menu" class="hidden lg:hidden border-t border-white/20">
+    <ul class="py-2">
+      {
+        paginas.map((pagina) => (
+          <li>
+            <a
+              href={pagina.href}
+              class={mobileLinkClass(isPageActive(pagina))}
+              aria-current={isCurrent(pagina.href) ? "page" : undefined}
+            >
+              {pagina.nombre}
+            </a>
+            {pagina.subpaginas && pagina.subpaginas.length > 0 && (
+              <ul class="bg-black/20">
+                {pagina.subpaginas.map((sub) => (
+                  <li>
+                    <a
+                      href={sub.href}
+                      class={mobileSubLinkClass(isCurrent(sub.href))}
+                      aria-current={isCurrent(sub.href) ? "page" : undefined}
+                    >
+                      {sub.nombre}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</nav>
+
+<script>
+  const SCROLL_THRESHOLD = 60;
+
+  const background = document.getElementById("navbar-background");
+  const menuButton = document.getElementById("navbar-menu-button");
+  const menuIcon = document.getElementById("navbar-icon-menu");
+  const closeIcon = document.getElementById("navbar-icon-close");
+  const mobileMenu = document.getElementById("navbar-mobile-menu");
+
+  // DESACTIVADO — selector "Conócenos" (ver markup comentado arriba).
+  // const conocenos = document.getElementById("navbar-conocenos");
+  // const conocenosButton = document.getElementById("navbar-conocenos-button");
+
+  let scrolled = false;
+  let mobileOpen = false;
+
+  const updateBackground = () => {
+    background?.classList.toggle("opacity-0", !scrolled && !mobileOpen);
+  };
+
+  const onScroll = () => {
+    scrolled = window.scrollY > SCROLL_THRESHOLD;
+    updateBackground();
+  };
+
+  const toggleMobileMenu = () => {
+    mobileOpen = !mobileOpen;
+    mobileMenu?.classList.toggle("hidden", !mobileOpen);
+    menuIcon?.classList.toggle("hidden", mobileOpen);
+    closeIcon?.classList.toggle("hidden", !mobileOpen);
+    menuButton?.setAttribute("aria-expanded", String(mobileOpen));
+    menuButton?.setAttribute(
+      "aria-label",
+      mobileOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación",
+    );
+    updateBackground();
+  };
+
+  /*
+   * DESACTIVADO — apertura/cierre del selector "Conócenos".
+   *
+   * const setConocenosOpen = (open: boolean) => {
+   *   conocenos?.toggleAttribute("data-open", open);
+   *   conocenosButton?.setAttribute("aria-expanded", String(open));
+   * };
+   */
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  menuButton?.addEventListener("click", toggleMobileMenu);
+
+  /*
+   * DESACTIVADO — listeners del selector "Conócenos". Se cerraba al hacer
+   * clic fuera de él o al pulsar Escape.
+   *
+   * conocenosButton?.addEventListener("click", () => {
+   *   setConocenosOpen(!conocenos?.hasAttribute("data-open"));
+   * });
+   *
+   * document.addEventListener("click", (event) => {
+   *   if (!conocenos?.contains(event.target as Node)) setConocenosOpen(false);
+   * });
+   * document.addEventListener("keydown", (event) => {
+   *   if (event.key === "Escape") setConocenosOpen(false);
+   * });
+   */
+
+  onScroll();
+</script>
